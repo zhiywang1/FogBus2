@@ -1,0 +1,15 @@
+docker swarm init --advertise-addr <MANAGER-IP>
+docker swarm join --token <SWARM-JOIN-TOKEN> <MANAGER-IP>:2377
+docker network create --driver overlay --attachable my-overlay
+docker run -d --name container1 --network my-overlay nginx
+
+
+# enable docker content trust
+export DOCKER_CONTENT_TRUST=1
+
+# when pull the not verified images cannot be pulled
+# to verify the pulled images, attempt docker pull
+docker image prune
+
+# sign images
+https://docs.docker.com/engine/security/trust/
