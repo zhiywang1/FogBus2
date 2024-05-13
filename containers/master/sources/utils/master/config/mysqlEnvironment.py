@@ -1,6 +1,6 @@
 from dotenv import dotenv_values
 
-mysqlEnv = dotenv_values(".mysql.env")
+mysqlEnv = dotenv_values()
 
 
 class MySQLEnvironment:

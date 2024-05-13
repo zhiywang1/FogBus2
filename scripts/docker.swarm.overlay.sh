@@ -13,3 +13,10 @@ docker image prune
 
 # sign images
 https://docs.docker.com/engine/security/trust/
+docker trust key generate jeff
+By default this is stored in ~/.docker/trust/
+
+or
+docker trust key load key.pem --name jeff
+
+

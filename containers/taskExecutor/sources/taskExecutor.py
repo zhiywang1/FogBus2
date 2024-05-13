@@ -118,6 +118,11 @@ def parseArg():
         type=str,
         help='TaskExecutor ip.')
     parser.add_argument(
+        '--network',
+        metavar='docker network',
+        type=str,
+        help='The network this container will use')
+    parser.add_argument(
         '--masterIP',
         metavar='MasterIP',
         type=str,

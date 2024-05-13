@@ -4,7 +4,7 @@ services:
 
   fogbus2-remote_logger:
     # image: fogbus2-remote_logger # Use this for local image
-    image: cloudslab/fogbus2-remote_logger
+    image: cloudslab/fogbus2-remote_logger:trusted.0.1
     build:
       context: ./
       dockerfile: ./Dockerfile

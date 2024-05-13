@@ -4,7 +4,7 @@ from dotenv import dotenv_values
 
 from .base import Config
 
-environment = dotenv_values(".env")
+environment = dotenv_values()
 
 portRangeStr = environment['REMOTE_LOGGER_PORT_RANGE']
 portRange = portRangeStr.split('-')

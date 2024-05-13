@@ -4,7 +4,7 @@ services:
 
   fogbus2-game_of_life31:
     # image: fogbus2-game_of_life31
-    image: cloudslab/fogbus2-game_of_life31
+    image: cloudslab/fogbus2-game_of_life31:trusted.0.1
     build:
       context: ../../
       dockerfile: dockerFiles/GameOfLife31/Dockerfile
