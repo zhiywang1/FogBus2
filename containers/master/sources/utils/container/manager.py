@@ -20,6 +20,9 @@ class ContainerManager:
         self.dockerClient: DockerClient = initDockerClient()
 
     def tryRenamingContainerName(self, newName: str, previousName: str = ''):
+        # not renaming with overlay network due to a bug
+        # https://github.com/moby/moby/issues/42351
+        return
         newName = filterIllegalCharacter(string=newName)
         if not self.isContainerMode:
             return

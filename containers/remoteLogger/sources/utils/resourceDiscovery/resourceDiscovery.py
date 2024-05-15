@@ -2,7 +2,7 @@ from ipaddress import ip_network
 from pprint import pformat
 from threading import Event
 from time import sleep
-
+import socket
 from .discovered import DiscoveredManager
 from ..component import BasicComponent
 from ..config import ConfigActor
@@ -210,7 +210,18 @@ class ResourcesDiscovery:
 
     def generateNeighboursIP(self):
         myIP = self.basicComponent.me.addr[0]
+        myIP = self.get_ip_address(myIP)
         if self.netGateway == '':
             self.netGateway = myIP[:myIP.rfind('.')] + '.0'
         network = ip_network('%s/%s' % (self.netGateway, self.subnetMask))
         return network
+    
+    @staticmethod
+    def get_ip_address(domain):
+        try:
+            # Get the primary IP address associated with the domain
+            ip_address = socket.gethostbyname(domain)
+            return ip_address
+        except socket.gaierror as e:
+            # Handle error in case the domain does not resolve
+            return

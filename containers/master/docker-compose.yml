@@ -1,22 +1,23 @@
-version: '3'
-
 services:
 
   fogbus2-master:
-    # image: fogbus2-master
-    image: cloudslab/fogbus2-master:trusted.0.1
+    image: cloudslab/fogbus2-master:1.0
     build:
       context: ./
       dockerfile: ./Dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./sources/:/workplace/
-      - ./sources/.mysql.env:/workplace/.mysql.env
     environment:
       PUID: 1000
       PGID: 1000
       TZ: Australia/Melbourne
       PYTHONUNBUFFERED: 0
-    network_mode:
-      host
     restart: unless-stopped
+    networks:
+      - fogbus2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+networks:
+  fogbus2:
+    external: true

@@ -1,21 +1,22 @@
-version: '3'
-
 services:
 
   fogbus2-actor:
-    # image: fogbus2-actor
-    image: cloudslab/fogbus2-actor:trusted.0.1
+    image: cloudslab/fogbus2-actor:1.0
     build:
       context: ./
       dockerfile: ./Dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./sources/:/workplace/
     environment:
       PUID: 1000
       PGID: 1000
       TZ: Australia/Melbourne
       PYTHONUNBUFFERED: 0
-    network_mode:
-      host
     restart: unless-stopped
+    networks:
+      - fogbus2
 
+networks:
+  fogbus2:
+    external: true

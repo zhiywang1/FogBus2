@@ -1,10 +1,7 @@
-version: '3'
-
 services:
 
   fogbus2-user:
-    # image: fogbus2-user
-    image: cloudslab/fogbus2-user:trusted.0.1
+    image: cloudslab/fogbus2-user:1.0
     build:
       context: ./
       dockerfile: ./Dockerfile
@@ -16,7 +13,13 @@ services:
       PGID: 1000
       TZ: Australia/Melbourne
     privileged: true
-    network_mode:
-      host
     restart: unless-stopped
+    networks:
+      - fogbus2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+networks:
+  fogbus2:
+    external: true
+
 

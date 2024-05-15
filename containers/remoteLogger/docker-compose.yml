@@ -1,20 +1,22 @@
-version: '3'
-
 services:
 
   fogbus2-remote_logger:
-    # image: fogbus2-remote_logger # Use this for local image
-    image: cloudslab/fogbus2-remote_logger:trusted.0.1
+    image: cloudslab/fogbus2-remote_logger:1.0
     build:
       context: ./
       dockerfile: ./Dockerfile
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./sources/.mysql.env:/workplace/.mysql.env
+      - ./sources:/workplace
     environment:
       PUID: 1000
       PGID: 1000
       TZ: Australia/Melbourne
-    network_mode:
-      host
     restart: unless-stopped
+    networks:
+      - fogbus2
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+networks:
+  fogbus2:
+    external: true

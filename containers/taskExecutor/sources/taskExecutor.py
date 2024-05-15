@@ -34,6 +34,7 @@ class TaskExecutor:
             totalCPUCores: int,
             cpuFreq: float,
             containerName: str = '',
+            networkName: str = '',
             logLevel=logging.DEBUG):
         self.basicComponent = BasicComponent(
             role=ComponentRole.TASK_EXECUTOR,
@@ -49,6 +50,7 @@ class TaskExecutor:
             terminate()
             return
         self.containerName = containerName
+        self.networkName = networkName
         self.registrationManager = RegistrationManager(
             basicComponent=self.basicComponent,
             userID=userID,
@@ -60,7 +62,9 @@ class TaskExecutor:
             cpuFreq=cpuFreq)
         self.containerManager = ContainerManager(
             basicComponent=self.basicComponent,
-            containerName=containerName)
+            containerName=containerName,
+            networkName=networkName
+        )
 
         self.profiler = ResourcesProfiler(
             basicComponent=self.basicComponent,
@@ -76,6 +80,8 @@ class TaskExecutor:
         self.periodicTaskRunner = PeriodicTaskRunner(
             basicComponent=self.basicComponent,
             periodicTasks=periodicTasks)
+
+
 
     def updateResources(self):
         self.profiler.profileResources()
@@ -191,6 +197,13 @@ def parseArg():
         default='',
         type=str,
         help='container name')
+    parser.add_argument(
+        '--networkName',
+        metavar='networkName',
+        nargs='?',
+        default='',
+        type=str,
+        help='networkName')
     return parser.parse_args()
 
 
@@ -204,6 +217,7 @@ if __name__ == '__main__':
 
     taskExecutor_ = TaskExecutor(
         containerName=args.containerName,
+        networkName=args.networkName,
         addr=(args.bindIP, 0),
         masterAddr=(args.masterIP, args.masterPort),
         remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),

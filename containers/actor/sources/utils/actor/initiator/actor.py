@@ -7,7 +7,6 @@ from .base import BaseInitiator
 from ...component.basic import BasicComponent
 from ...tools import filterIllegalCharacter,encrypt
 from ...types import Component
-from ...types import ActorResources
 
 
 class ActorInitiator(BaseInitiator):

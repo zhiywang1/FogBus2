@@ -1,3 +1,4 @@
+import hashlib
 from os import system
 from time import time
 from typing import List
@@ -11,6 +12,19 @@ from ...component.basic import BasicComponent
 from ...tools import camelToSnake
 from ...tools import filterIllegalCharacter
 from ...types import CPU
+
+
+def hash_to_base36(data):
+    # Hash the data using SHA-256 and get the hexadecimal output
+    hex_hash = hashlib.sha256(data.encode()).hexdigest()
+    num = int(hex_hash, 16)
+    # Base-36 encoding
+    chars = '0123456789abcdefghijklmnopqrstuvwxyz'
+    result = ''
+    while num > 0:
+        num, i = divmod(num, 36)
+        result = chars[i] + result
+    return result
 
 
 class TaskExecutorInitiator(BaseInitiator):
@@ -35,13 +49,38 @@ class TaskExecutorInitiator(BaseInitiator):
             taskName: str,
             taskToken: str,
             childTaskTokens: List[str],
-            isContainerMode: bool):
+            isContainerMode: bool,
+            networkName: str):
         baseTaskName, label = self.covertTaskName(taskName)
         actor = self.basicComponent.me
         master = self.basicComponent.master
         remoteLogger = self.basicComponent.remoteLogger
         childTaskTokens = self.serialize(childTaskTokens)
-        args = ' --bindIP %s' % actor.addr[0] + \
+        if not isContainerMode:
+            args = ' --bindIP %s' % actor.addr[0] + \
+                   ' --masterIP %s' % master.addr[0] + \
+                   ' --masterPort %d' % master.addr[1] + \
+                   ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
+                   ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
+                   ' --userID %s' % userID + \
+                   ' --taskName %s' % baseTaskName + \
+                   ' --taskToken %s' % taskToken + \
+                   ' --childrenTaskTokens %s' % childTaskTokens + \
+                   ' --actorID %s' % actor.componentID + \
+                   ' --totalCPUCores %d' % self.cpu.cores + \
+                   ' --cpuFrequency %f' % self.cpu.frequency + \
+                   ' --verbose %d' % self.basicComponent.debugLogger.level
+            self.initTaskExecutorOnHost(args=args)
+            return
+
+        containerName = '%s_%s_%s_%s' % (
+            taskName,
+            userName,
+            actor.nameLogPrinting,
+            time())
+        containerName = filterIllegalCharacter(string=containerName)
+        containerName = hash_to_base36(containerName)
+        args = ' --bindIP %s' % containerName + \
                ' --masterIP %s' % master.addr[0] + \
                ' --masterPort %d' % master.addr[1] + \
                ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
@@ -54,36 +93,32 @@ class TaskExecutorInitiator(BaseInitiator):
                ' --totalCPUCores %d' % self.cpu.cores + \
                ' --cpuFrequency %f' % self.cpu.frequency + \
                ' --verbose %d' % self.basicComponent.debugLogger.level
-        if not isContainerMode:
-            self.initTaskExecutorOnHost(args=args)
-            return
-
-        containerName = '%s_%s_%s_%s' % (
-            taskName,
-            userName,
-            actor.nameLogPrinting,
-            time())
-        containerName = filterIllegalCharacter(string=containerName)
         args += ' --containerName %s' % containerName
-        imageName = 'fogbus2-%s' % camelToSnake(baseTaskName)
+        args += ' --networkName %s' % networkName
+        imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
         self.initTaskExecutorInContainer(
-            imageName=imageName, containerName=containerName, args=args)
+            imageName=imageName, containerName=containerName, args=args, networkName=networkName)
 
-    def initTaskExecutorOnHost(self, args: str):
+    def initTaskExecutorOnHost(self,
+                               args: str):
         system('cd ../../taskExecutor/sources/ &&'
                ' python taskExecutor.py %s &' % args)
         self.basicComponent.debugLogger.debug(
             'Init TaskExecutor on host:\n %s', args)
 
     def initTaskExecutorInContainer(
-            self, args: str, imageName: str, containerName: str):
+            self,
+            args: str,
+            imageName: str,
+            containerName: str,
+            networkName: str):
         try:
             self.dockerClient.containers.run(
                 name=containerName,
                 detach=True,
                 auto_remove=True,
                 image=imageName,
-                network_mode='host',
+                network=networkName,
                 working_dir='/workplace',
                 volumes={
                     '/var/run/docker.sock':
@@ -97,8 +132,9 @@ class TaskExecutorInitiator(BaseInitiator):
             if 'cloudslab/' != imageName[:10]:
                 return self.initTaskExecutorInContainer(
                     args=args,
-                    imageName='cloudslab/'+imageName,
-                    containerName=containerName)
+                    imageName='cloudslab/' + imageName,
+                    containerName=containerName,
+                    networkName=networkName)
             self.basicComponent.debugLogger.warning(str(e))
 
     @staticmethod

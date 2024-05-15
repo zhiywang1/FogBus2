@@ -10,16 +10,23 @@ class ContainerManager:
     def __init__(
             self,
             basicComponent: BasicComponent,
-            containerName: str = ''):
+            containerName: str = '',
+            networkName: str = ''):
         self.basicComponent = basicComponent
         self.isContainerMode = False
         self.containerName = containerName
+        self.networkName = networkName
         if len(containerName):
             self.isContainerMode = True
         from docker import from_env as initDockerClient
-        self.dockerClient: DockerClient = initDockerClient()
+        # ugly fix
+        self.dockerClient: DockerClient = None
+        # self.dockerClient: DockerClient = initDockerClient()
 
     def tryRenamingContainerName(self, newName: str, previousName: str = ''):
+        # not renaming with overlay network due to a bug
+        # https://github.com/moby/moby/issues/42351
+        return
         newName = filterIllegalCharacter(string=newName)
         if not self.isContainerMode:
             return

@@ -90,7 +90,7 @@ class MessageReceiver(MessageSender):
             self.requests.put(request)
 
     def tryListeningOn(self, addr: Address, portRange: Tuple[int, int]) -> bool:
-        ip, targetPort = addr[0], addr[1]
+        ip, targetPort = '0.0.0.0', addr[1]
         portLower, portUpper = portRange
         if targetPort != 0 and \
                 (targetPort < portLower or targetPort >= portUpper):
@@ -108,9 +108,11 @@ class MessageReceiver(MessageSender):
             success = self.listenOn(addr=(ip, targetPort))
             if success:
                 return True
+        self.addr=(self.addr[0], targetPort) 
         return False
 
     def listenOn(self, addr: Address) -> bool:
+        self.addr = (self.addr[0], addr[1])
         try:
             self.serverSocket.setsockopt(
                 SOL_SOCKET,
@@ -118,9 +120,10 @@ class MessageReceiver(MessageSender):
                 1)
             self.serverSocket.bind(addr)
             self.serverSocket.listen()
-            self.addr = self.serverSocket.getsockname()
             self.debugLogger.info(
-                'Listening at %s' % str(self.addr))
+                'Listening at %s' % str(self.serverSocket.getsockname()))
+            self.debugLogger.info(
+                'Advertise addr is at %s' % str(self.addr))
             return True
         except OSError:
             return False

@@ -20,6 +20,7 @@ from utils.master import MasterMessageHandler
 from utils.master import MasterProfiler
 from utils.master import MasterResourcesDiscovery
 from utils.master import Registry
+from utils.master.networkController.networks import NetworkController
 
 
 class Master:
@@ -76,13 +77,16 @@ class Master:
             self.basicComponent.debugLogger.error(
                 'Scheduler name is invalid: %s', schedulerName)
             terminate()
+        docker_client = self.containerManager.dockerClient
+        self.networkController = NetworkController(docker_client)
         self.registry = Registry(
             basicComponent=self.basicComponent,
             applicationManager=self.applicationManager,
             scheduler=self.scheduler,
             systemPerformance=self.loggerManager.systemPerformance,
             profiler=self.profiler,
-            waitTimeout=waitTimeout)
+            waitTimeout=waitTimeout,
+            networkController=self.networkController)
         self.resourcesDiscovery = MasterResourcesDiscovery(
             registry=self.registry,
             basicComponent=self.basicComponent,
@@ -127,7 +131,7 @@ class Master:
             self.profiler.dataRateTestEvent.set()
         else:
             self.basicComponent.debugLogger.debug(
-                'Waiting for %s actors',self.profiler.minHosts)
+                'Waiting for %s actors', self.profiler.minHosts)
             while len(self.registry.registeredManager.actors) < \
                     self.profiler.minHosts:
                 sleep(1)

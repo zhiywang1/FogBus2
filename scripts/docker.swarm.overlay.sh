@@ -1,4 +1,5 @@
 docker swarm init --advertise-addr <MANAGER-IP>
+ docker swarm leave --force
 docker swarm join --token <SWARM-JOIN-TOKEN> <MANAGER-IP>:2377
 docker network create --driver overlay --attachable my-overlay
 docker run -d --name container1 --network my-overlay nginx
@@ -19,4 +20,5 @@ By default this is stored in ~/.docker/trust/
 or
 docker trust key load key.pem --name jeff
 
+docker trust sign cloudslab/fogbus2-ocr:1.0
 

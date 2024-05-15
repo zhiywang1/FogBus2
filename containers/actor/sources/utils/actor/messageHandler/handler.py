@@ -36,7 +36,8 @@ class ActorMessageHandler:
         self._runningIperfClient = Lock()
         self._runningIperfServer = Lock()
 
-    def handleMessage(self, message: MessageReceived):
+    def handleMessage(self,
+                      message: MessageReceived):
         if message.typeIs(
                 messageType=MessageType.PLACEMENT,
                 messageSubType=MessageSubType.RUN_TASK_EXECUTOR):
@@ -78,7 +79,8 @@ class ActorMessageHandler:
             self.resourcesDiscovery.handleMessage(message=message)
             return
 
-    def handleRegistered(self, message: MessageReceived):
+    def handleRegistered(self,
+                         message: MessageReceived):
         source = message.source
         self.basicComponent.master = source
         data = message.data
@@ -86,6 +88,7 @@ class ActorMessageHandler:
         name = data['name']
         nameLogPrinting = data['nameLogPrinting']
         nameConsistent = data['nameConsistent']
+        swarmJoinToken = data['swarmJoinToken']
         self.basicComponent.setName(
             addr=self.basicComponent.addr,
             name=name,
@@ -95,9 +98,17 @@ class ActorMessageHandler:
             setIsRegistered=True)
         self.containerManager.tryRenamingContainerName(
             newName=self.basicComponent.nameLogPrinting)
+        try:
+            self.basicComponent.debugLogger.info(
+                'Joining swarm at %s', source.addr[0])
+            self.containerManager.dockerClient.swarm.join(remote_addrs=[f'source.addr[0]:2377'],
+                                                          join_token=swarmJoinToken)
+        except Exception as e:
+            pass
         self.basicComponent.debugLogger.info("Registered, running...")
 
-    def handleInitTaskExecutor(self, message: MessageReceived):
+    def handleInitTaskExecutor(self,
+                               message: MessageReceived):
         data = message.data
         if self.profiler.resources.cpu.utilization > .8:
             return
@@ -109,13 +120,15 @@ class ActorMessageHandler:
         taskName = data['taskName']
         taskToken = data['taskToken']
         childTaskTokens = data['childrenTaskTokens']
+        networkName = data['networkName']
         self.initiator.initTaskExecutor(
             userID=userID,
             userName=userName,
             taskName=taskName,
             taskToken=taskToken,
             childTaskTokens=childTaskTokens,
-            isContainerMode=self.containerManager.isContainerMode)
+            isContainerMode=self.containerManager.isContainerMode,
+            networkName=networkName)
 
     def canInitComponent(
             self,
@@ -133,7 +146,8 @@ class ActorMessageHandler:
             return False
         return True
 
-    def handleInitMaster(self, message: MessageReceived):
+    def handleInitMaster(self,
+                         message: MessageReceived):
         self.basicComponent.debugLogger.debug('Received init master msg')
         if not self.canInitComponent():
             self.basicComponent.debugLogger.info(
@@ -148,7 +162,8 @@ class ActorMessageHandler:
             isContainerMode=self.containerManager.isContainerMode)
         return
 
-    def handleAdvertise(self, message: MessageReceived):
+    def handleAdvertise(self,
+                        message: MessageReceived):
         if not self.canInitComponent():
             self.basicComponent.debugLogger.info(
                 'Ignore advertisement from %s' % str(message.source.addr))
@@ -161,7 +176,8 @@ class ActorMessageHandler:
             isContainerMode=self.containerManager.isContainerMode)
         return
 
-    def handleDataRateTestReceive(self, message: MessageReceived):
+    def handleDataRateTestReceive(self,
+                                  message: MessageReceived):
         data = message.data
         sourceAddr = data['sourceAddr']
         sourceHostID = data['sourceHostID']
@@ -214,7 +230,8 @@ class ActorMessageHandler:
                 continue
         self._runningIperfServer.release()
 
-    def handleDataRateTestSend(self, message: MessageReceived):
+    def handleDataRateTestSend(self,
+                               message: MessageReceived):
         self._runningIperfClient.acquire()
         data = message.data
         source = message.source
