@@ -36,7 +36,7 @@ class BasicComponent(Communicator, ABC):
         self.serveEvent.wait()
         self.setName(addr=self.addr)
         self.exitTries: int = 0
-        self.maxExitTries: int = 1
+        self.maxExitTries: int = 3
         self.platform = PlatformInfo()
 
     def signalHandler(self, sig, frame):
@@ -44,9 +44,6 @@ class BasicComponent(Communicator, ABC):
         self.exitTries += 1
         self.debugLogger.info(
             '[*] Exiting ... (%d/%d)', self.exitTries, self.maxExitTries)
-        if self.exitTries >= self.maxExitTries:
-            terminate()
-            return
         if self.role in {ComponentRole.MASTER, ComponentRole.REMOTE_LOGGER}:
             terminate()
             return
@@ -56,6 +53,9 @@ class BasicComponent(Communicator, ABC):
             messageSubType=MessageSubType.EXIT,
             data=data,
             destination=self.master)
+        if self.exitTries >= self.maxExitTries:
+            terminate()
+            return
 
     def handleSignal(self):
         signal.signal(signal.SIGINT, self.signalHandler)

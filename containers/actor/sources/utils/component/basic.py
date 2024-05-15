@@ -36,7 +36,7 @@ class BasicComponent(Communicator, ABC):
         self.serveEvent.wait()
         self.setName(addr=self.addr)
         self.exitTries: int = 0
-        self.maxExitTries: int = 1
+        self.maxExitTries: int = 3
         self.platform = PlatformInfo()
 
     def signalHandler(self, sig, frame):

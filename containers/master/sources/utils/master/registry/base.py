@@ -291,10 +291,13 @@ class Registry(ABC):
             return terminateMessage(source, reason='Not registered')
         user = self.registeredManager.users[source.componentID]
         for taskExecutor in user.taskNameToExecutor.values():
-            if taskExecutor.waitTimeout <= 0:
-                continue
-            message = waitMessage(taskExecutor=taskExecutor)
-            self.registeredManager.taskExecutors.coolOff(taskExecutor)
+            if taskExecutor.waitTimeout > 0:
+                message = waitMessage(taskExecutor=taskExecutor)
+                self.registeredManager.taskExecutors.coolOff(taskExecutor)
+            else:
+                message = terminateMessage(taskExecutor, reason='User Deregistered')
+                del self.registeredManager.taskExecutors[taskExecutor.componentID]
+                self.debugLogger.debug('Deregister: %s', taskExecutor.nameLogPrinting)
             self.basicComponent.sendMessage(messageToSend=message)
         del self.registeredManager.users[source.componentID]
 

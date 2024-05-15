@@ -53,10 +53,15 @@ class NetworkController:
 
     def create_network_for_request(self,
                                    request: str) -> Network:
-        self.delete_network(request)
+
         network_name = self.generate_network_name(request)
-        docker_network = self.docker_client.networks.create(driver='overlay', name=network_name,
-                                                            attachable=True)
+        try:
+            self.delete_network(request)
+            docker_network = self.docker_client.networks.create(driver='overlay', name=network_name,
+                                                                attachable=True)
+        except Exception:
+            docker_network = self.docker_client.networks.get(network_name)
+            pass
         network = Network(id=docker_network.id, request=request, status=NetworkStatus.ACTIVE, name=network_name)
         self.networks[request] = network
         return network
@@ -64,9 +69,13 @@ class NetworkController:
     def connect_container_to_network(self,
                                      container_name,
                                      network_name):
-        network = self.docker_client.networks.get(network_name)
-        container = self.docker_client.containers.get(container_name)
-        network.connect(container)
+        try:
+            network = self.docker_client.networks.get(network_name)
+            container = self.docker_client.containers.get(container_name)
+            network.connect(container)
+        except Exception as e:
+            print(e)
+            print('The above error is ignored cause it wont affect the functionality')
 
     def delete_network(self,
                        request: str):
