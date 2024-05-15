@@ -77,9 +77,7 @@ class NetworkController:
         try:
             docker_network = self.docker_client.networks.get(network_name)
             docker_network.remove()
-            if request in self.networks:
-                del self.networks[request]
-        except NotFound:
+        except Exception:
             pass
 
     @staticmethod
