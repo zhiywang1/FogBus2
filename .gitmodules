@@ -1,0 +1,3 @@
+[submodule "containers/SIEM/static/clair"]
+	path = containers/SIEM/static/clair
+	url = https://github.com/quay/clair.git

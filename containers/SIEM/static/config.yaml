@@ -1,0 +1,38 @@
+introspection_addr: localhost:8089
+http_listen_addr: localhost:8080
+log_level: debug
+indexer:
+  connstring: host=localhost port=5432 user=clair dbname=clair sslmode=disable
+  scanlock_retry: 10
+  layer_scan_concurrency: 5
+  migrations: true
+matcher:
+  indexer_addr: "localhost:8080"
+  connstring: host=localhost port=5432 user=clair dbname=clair sslmode=disable
+  max_conn_pool: 100
+  migrations: true
+matchers:
+  names:
+  - "alpine-matcher"
+  - "aws-matcher"
+  - "debian-matcher"
+  - "gobin"
+  - "java-maven"
+  - "oracle"
+  - "photon"
+  - "python"
+  - "rhel"
+  - "rhel-container-matcher"
+  - "suse"
+  - "ubuntu"
+  config: {}
+notifier:
+  indexer_addr: http://100.106.159.123/:8080/
+  matcher_addr: http://100.106.159.123/:8080/
+  connstring: host=localhost port=5432 user=clair dbname=clair sslmode=disable
+  migrations: true
+  delivery_interval: 1m
+  poll_interval: 5m
+
+metrics:
+  name: "prometheus"
