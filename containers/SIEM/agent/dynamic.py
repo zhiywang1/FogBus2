@@ -1,4 +1,4 @@
-from utils import check_post_data
+from utils.common import format_request
 from twisted.web.resource import Resource
 
 
@@ -15,9 +15,9 @@ class DynamicAPIHandler(Resource):
 class NetworkAPIHandler(Resource):
     isLeaf = True
 
-    @check_post_data
+    @format_request
     # TODO
-    def render_POST(self,
+    def render_GET(self,
                     data):
         data = {"status": "success"}
         return data
@@ -26,9 +26,9 @@ class NetworkAPIHandler(Resource):
 class ComputationAPIHandler(Resource):
     isLeaf = True
 
-    @check_post_data
+    @format_request
     # TODO
-    def render_POST(self,
+    def render_GET(self,
                     data):
         data = {"status": "success"}
         return data
@@ -37,9 +37,9 @@ class ComputationAPIHandler(Resource):
 class StorageHandler(Resource):
     isLeaf = True
 
-    @check_post_data
+    @format_request
     # TODO
-    def render_POST(self,
+    def render_GET(self,
                     data):
         data = {"status": "success"}
         return data
