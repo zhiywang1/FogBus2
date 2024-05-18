@@ -95,8 +95,6 @@ class ContainerNetworkUtilization:
     def format_container_networks(self):
         self.containers.clear()
         for container in self.container_networks:
-            print(f"Container ID: {container['id']}")
-            print(f"Container Name: {container['name']}")
 
             networks = []
             for network in container['networks']:
@@ -139,7 +137,6 @@ class ContainerNetworkUtilization:
         } for container in self.containers]
 
 
-# Usage example
 if __name__ == "__main__":
     container_network = ContainerNetworkUtilization()
     container_network.fetch_container_networks()

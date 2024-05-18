@@ -2,15 +2,6 @@ import docker
 from ..common import ToDict
 
 
-# from pprint import pformat
-# class ToDict:
-#
-#     def __repr__(self):
-#         return pformat(self.__dict__)
-#
-#     def to_dict(self):
-#         return self.__dict__
-
 class ContainerStorage(ToDict):
 
     def __init__(self,
@@ -60,7 +51,6 @@ class ContainerStorageUtilization:
         return [container.to_dict() for container in self.container_storages]
 
 
-# Usage example
 if __name__ == "__main__":
     container_storage_util = ContainerStorageUtilization()
     container_storage_util.fetch_container_storage()
