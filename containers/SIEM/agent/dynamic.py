@@ -1,6 +1,7 @@
 from utils.common import format_request
 from twisted.web.resource import Resource
 from utils.dynamic.computation import ContainerResourceUsage
+from utils.dynamic.network import ContainerNetworkUtilization
 
 
 class DynamicAPIHandler(Resource):
@@ -20,7 +21,10 @@ class NetworkAPIHandler(Resource):
     # TODO
     def render_GET(self,
                    data):
-        data = {"status": "success"}
+        network = ContainerNetworkUtilization()
+        network.fetch_container_networks()
+        network.format_container_networks()
+        data = {"status": "success", "data": network.to_dict()}
         return data
 
 
