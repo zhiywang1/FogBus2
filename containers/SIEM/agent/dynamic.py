@@ -2,6 +2,7 @@ from utils.common import format_request
 from twisted.web.resource import Resource
 from utils.dynamic.computation import ContainerResourceUsage
 from utils.dynamic.network import ContainerNetworkUtilization
+from utils.dynamic.storage import ContainerStorageUtilization
 
 
 class DynamicAPIHandler(Resource):
@@ -49,5 +50,7 @@ class StorageHandler(Resource):
     # TODO
     def render_GET(self,
                    data):
-        data = {"status": "success"}
+        storage = ContainerStorageUtilization()
+        storage.fetch_container_storage()
+        data = {"status": "success", "data": storage.to_dict()}
         return data
