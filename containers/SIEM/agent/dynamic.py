@@ -1,9 +1,40 @@
-from utils.common import format_request
+import docker
+from utils.common import format_get_request, format_post_request
 from twisted.web.resource import Resource
 from utils.dynamic.computation import ContainerResourceUsage
 from utils.dynamic.network_container import ContainerNetworkUtilization
 from utils.dynamic.storage import ContainerStorageUtilization
 from utils.dynamic.network_host import SSUtilization
+
+
+class ContainersAPIHandler(Resource):
+    isLeaf = True
+
+    def __init__(self):
+        super().__init__()
+        self.docker_client = docker.from_env()
+
+    @format_get_request
+    def render_GET(self,
+                   data):
+        containers = self.docker_client.containers.list(all=True)
+        data = {
+            "status": "success",
+            "data": [container.image.id for container in containers]}
+        return data
+
+    @format_post_request
+    def render_POST(self,
+                    data):
+        if "action" not in data:
+            return {"status": "error", "message": "Action not found"}
+        if "container_id" not in data:
+            return {"status": "error", "message": "Container ID not found"}
+        if data["action"] == "stop":
+            container = self.docker_client.containers.get(data["container_id"])
+            container.stop()
+            return {"status": "success", "message": "Container stopped"}
+        return {"status": "error", "message": "Action not found"}
 
 
 class DynamicAPIHandler(Resource):
@@ -15,13 +46,13 @@ class DynamicAPIHandler(Resource):
         self.putChild(b'network-host', HostNetworkAPIHandler())
         self.putChild(b'storage', StorageHandler())
         self.putChild(b'computation', ComputationAPIHandler())
+        self.putChild(b'containers', ContainersAPIHandler())
 
 
 class NetworkAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
-    # TODO
+    @format_get_request
     def render_GET(self,
                    data):
         network = ContainerNetworkUtilization()
@@ -34,8 +65,7 @@ class NetworkAPIHandler(Resource):
 class HostNetworkAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
-    # TODO
+    @format_get_request
     def render_GET(self,
                    data):
         network = SSUtilization()
@@ -47,8 +77,7 @@ class HostNetworkAPIHandler(Resource):
 class ComputationAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
-    # TODO
+    @format_get_request
     def render_GET(self,
                    data):
         computation = ContainerResourceUsage()
@@ -61,8 +90,7 @@ class ComputationAPIHandler(Resource):
 class StorageHandler(Resource):
     isLeaf = True
 
-    @format_request
-    # TODO
+    @format_get_request
     def render_GET(self,
                    data):
         storage = ContainerStorageUtilization()

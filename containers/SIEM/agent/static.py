@@ -1,8 +1,26 @@
-from utils.common import format_request
+import docker
+from utils.common import format_get_request
 from twisted.web.resource import Resource
 from utils.static.host_config import HostConfig
 from utils.static.network_config import NetworkConfig
 from utils.static.storage import DiskUsageInfo
+
+
+class ImageAPIHandler(Resource):
+    isLeaf = True
+
+    def __init__(self):
+        super().__init__()
+        self.docker_client = docker.from_env()
+
+    @format_get_request
+    def render_GET(self,
+                   data):
+        images = self.docker_client.images.list()
+        data = {
+            "status": "success",
+            "data": [image.id for image in images]}
+        return data
 
 
 class StaticAPIHandler(Resource):
@@ -13,12 +31,13 @@ class StaticAPIHandler(Resource):
         self.putChild(b'host-config', HostConfigAPIHandler())
         self.putChild(b'network-config', NetworkConfigAPIHandler())
         self.putChild(b'storage', StorageAPIHandler())
+        self.putChild(b'images', ImageAPIHandler())
 
 
 class HostConfigAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
+    @format_get_request
     def render_GET(self,
                    data):
         host_config = HostConfig()
@@ -35,7 +54,7 @@ class HostConfigAPIHandler(Resource):
 class NetworkConfigAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
+    @format_get_request
     def render_GET(self,
                    data):
         network_config = NetworkConfig()
@@ -48,7 +67,7 @@ class NetworkConfigAPIHandler(Resource):
 class StorageAPIHandler(Resource):
     isLeaf = True
 
-    @format_request
+    @format_get_request
     def render_GET(self,
                    data):
         storage = DiskUsageInfo()
