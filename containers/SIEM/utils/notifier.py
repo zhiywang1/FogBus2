@@ -56,7 +56,7 @@ class EmailNotifier:
 
 if __name__ == '__main__':
     dotenv.load_dotenv()
-    email_notifier = EmailNotifier(os.getenv('GMAIL_USER'), os.getenv('GMAIL_PASS'))
+    email_notifier = EmailNotifier(os.getenv('GMAIL_USER'), os.getenv('GMAIL_APP_PASS'))
     email_notifier.send_email(
         email_notifier.server.username,
         'Test Subject',
