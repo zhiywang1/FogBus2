@@ -5,7 +5,7 @@ from utils.task import Task
 from utils.notifier import EmailNotifier
 from utils.agent_talker import AgentTalker
 from dynamic.policies.computation import ComputationPolicy
-
+from dynamic.policies.network_host import NetworkHostPolicy
 
 def load_hosts():
     with open("hosts.list") as f:
@@ -53,11 +53,22 @@ async def task_dynamic_computation():
         body = format_body(agent_taker, body)
         email_notifier.send_email(subject, body)
 
+network_host_policy = NetworkHostPolicy()
+
+
+async def task_dynamic_network_host():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_dynamic_network_host()
+        subject, body = network_host_policy.apply(resp)
+        if subject is None:
+            continue
+        body = format_body(agent_taker, body)
+        email_notifier.send_email(subject, body)
 
 if __name__ == "__main__":
     manager = TaskManager('SIME Dynamic')
 
-    task1 = Task("Task1", 60, task_dynamic_computation)
+    task1 = Task("Task1", 60, task_dynamic_network_host)
 
     manager.add_task(task1)
 
