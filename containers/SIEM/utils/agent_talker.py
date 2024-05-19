@@ -2,6 +2,7 @@ import requests
 import dotenv
 import os
 from requests.auth import HTTPBasicAuth
+from audit_logger import FileAuditLogger
 
 
 class AgentTalker:
@@ -12,6 +13,7 @@ class AgentTalker:
                  password):
         self.base_url = f"http://{ip}:{port}"
         self.auth = HTTPBasicAuth(username, password)
+        self.audit_logger = FileAuditLogger(f'{ip}-{port}')
 
     def _get(self,
              path):
@@ -35,39 +37,69 @@ class AgentTalker:
             return None
 
     def get_static_storage(self):
-        return self._get("static/storage")
+        path = "static/storage"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_static_network_config(self):
-        return self._get("static/network-config")
+        path = "static/network-config"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_static_host_config(self):
-        return self._get("static/host-config")
+        path = "static/host-config"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_static_images(self):
-        return self._get("static/images")
+        path = "static/images"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_dynamic_network_containers(self):
-        return self._get("dynamic/network-container")
+        path = "dynamic/network-container"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_dynamic_network_host(self):
-        return self._get("dynamic/network-host")
+        path = "dynamic/network-host"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_dynamic_storage(self):
-        return self._get("dynamic/storage")
+        path = "dynamic/storage"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_dynamic_computation(self):
-        return self._get("dynamic/computation")
+        path = "dynamic/computation"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def get_dynamic_containers(self):
-        return self._get("dynamic/containers")
+        path = "dynamic/containers"
+        resp = self._get(path)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
     def post_dynamic_stop_container(self,
                                     container_id):
-        return self._post(
-            "dynamic/containers",
-            {
-                "action": "stop",
-                "container_id": container_id})
+        path = "dynamic/containers"
+        payload = {
+            "action": "stop",
+            "container_id": container_id
+        }
+        resp = self._post(path, payload)
+        self.audit_logger.log(resp, file_path=path)
+        return resp
 
 
 if __name__ == "__main__":
