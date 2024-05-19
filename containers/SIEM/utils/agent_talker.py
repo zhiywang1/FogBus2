@@ -2,7 +2,7 @@ import requests
 import dotenv
 import os
 from requests.auth import HTTPBasicAuth
-from audit_logger import FileAuditLogger
+from .audit_logger import FileAuditLogger
 
 
 class AgentTalker:
@@ -11,9 +11,11 @@ class AgentTalker:
                  port,
                  username,
                  password):
+        self.ip = ip
+        self.port = port
         self.base_url = f"http://{ip}:{port}"
         self.auth = HTTPBasicAuth(username, password)
-        self.audit_logger = FileAuditLogger(f'{ip}-{port}')
+        self.audit_logger = FileAuditLogger(f'logs/{ip}-{port}')
 
     def _get(self,
              path):

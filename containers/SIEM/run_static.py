@@ -3,6 +3,8 @@ import os
 from utils.task_manager import TaskManager
 from utils.task import Task
 from utils.notifier import EmailNotifier
+from utils.agent_talker import AgentTalker
+from static.policies.images import ImagesPolicy
 
 
 def load_hosts():
@@ -20,18 +22,37 @@ email_notifier = EmailNotifier(
     username=email_username,
     password=email_password)
 
+http_basic_auth_user = os.getenv("AGENT_BASIC_HTTP_USER")
+http_basic_auth_pass = os.getenv("AGENT_BASIC_HTTP_PASS")
 
-async def sample_task_action():
-    print("Task executed")
+agent_talkers = []
+for host in hosts:
+    hostname, port = host.split(":")
+    port = int(port)
+    agent_talkers.append(AgentTalker(
+        hostname, port, http_basic_auth_user, http_basic_auth_pass))
+
+images_policy = ImagesPolicy(email_notifier=email_notifier)
+
+
+async def task_static_images():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_static_images()
+        subject, body = images_policy.apply(resp)
+        if subject is None:
+            continue
+        body = (f'IP: {agent_taker.ip}\r\n'
+                f'Port: {agent_taker.port}\r\n'
+                f'API: {agent_taker.base_url}\r\n'
+                f'\r\n{body}')
+        email_notifier.send_email(subject, body)
 
 
 if __name__ == "__main__":
     manager = TaskManager('SIME Static')
 
-    task1 = Task("Task1", 5, sample_task_action)
-    task2 = Task("Task2", 5, sample_task_action)
+    task1 = Task("Task1", 5, task_static_images)
 
     manager.add_task(task1)
-    manager.add_task(task2)
 
     manager.run()

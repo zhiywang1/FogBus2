@@ -45,9 +45,9 @@ class EmailNotifier:
         self.server = EmailServer(username, password)
 
     def send_email(self,
-                   to_email,
                    subject,
                    body):
+        to_email = self.server.username
         email = Email(self.server.username, subject, body, to_email)
         text = email.covert()
         self.server.conn.sendmail(self.server.username, to_email, text)
@@ -58,6 +58,5 @@ if __name__ == '__main__':
     dotenv.load_dotenv()
     email_notifier = EmailNotifier(os.getenv('GMAIL_USER'), os.getenv('GMAIL_APP_PASS'))
     email_notifier.send_email(
-        email_notifier.server.username,
         'Test Subject',
         'This is the body of the email', )
