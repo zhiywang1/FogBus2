@@ -44,6 +44,8 @@ class HostConfigAPIHandler(Resource):
         host_config.get_enabled_users()
         host_config.get_ssh_users()
         host_config.get_sudo_users()
+        host_config.get_logged_in_users()
+        host_config.get_logged_in_history()
         data = {
             'status': 'success',
             'data': host_config.to_dict()

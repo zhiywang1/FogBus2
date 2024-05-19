@@ -8,6 +8,8 @@ class HostConfig(ToDict):
         self.enabled_users = []
         self.ssh_users = []
         self.sudo_users = []
+        self.logged_in_users = []
+        self.logged_in_history = []
 
     def get_enabled_users(self):
         with open('/etc/passwd', 'r') as passwd_file:
@@ -63,10 +65,44 @@ class HostConfig(ToDict):
 
         self.sudo_users = list(sudo_users)
 
+    def get_logged_in_users(self):
+        logged_in_users = []
+        output = subprocess.getoutput('who')
+        for line in output.splitlines():
+            parts = line.split()
+            if parts:
+                logged_in_users.append(parts[0])
+        self.logged_in_users = logged_in_users
+
+    def get_logged_in_history(self):
+        logged_in_history = []
+        output = subprocess.getoutput('last')
+        for line in output.splitlines():
+            if line.startswith(('reboot', 'shutdown')):
+                continue
+            parts = line.split()
+            if parts and len(parts) >= 5:
+                user = parts[0]
+                terminal = parts[1]
+                hostname = parts[2]
+                start_time = ' '.join(parts[3:7])
+                if len(parts) >= 10:
+                    end_time = ' '.join(parts[7:10])
+                else:
+                    end_time = 'still logged in'
+                logged_in_history.append({
+                    'user': user,
+                    'terminal': terminal,
+                    'hostname': hostname,
+                    'start_time': start_time,
+                    'end_time': end_time
+                })
+        self.logged_in_history = logged_in_history
 
 if __name__ == "__main__":
     info = HostConfig()
     info.get_enabled_users()
     info.get_ssh_users()
     info.get_sudo_users()
+    info.get_logged_in_users()
     print(info)
