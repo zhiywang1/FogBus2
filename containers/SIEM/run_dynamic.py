@@ -7,6 +7,7 @@ from utils.agent_talker import AgentTalker
 from dynamic.policies.computation import ComputationPolicy
 from dynamic.policies.network_host import NetworkHostPolicy
 from dynamic.policies.network_container import NetworkContainerPolicy
+from dynamic.policies.storage import StoragePolicy
 def load_hosts():
     with open("hosts.list") as f:
         _hosts = f.readlines()
@@ -77,10 +78,24 @@ async def task_dynamic_network_container():
         body = format_body(agent_taker, body)
         email_notifier.send_email(subject, body)
 
+
+storage_policy = StoragePolicy()
+
+
+async def task_dynamic_storage():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_dynamic_storage()
+        subject, body = storage_policy.apply(resp)
+        if subject is None:
+            continue
+        body = format_body(agent_taker, body)
+        email_notifier.send_email(subject, body)
+
+
 if __name__ == "__main__":
     manager = TaskManager('SIME Dynamic')
 
-    task1 = Task("Task1", 60, task_dynamic_network_container)
+    task1 = Task("Task1", 60, task_dynamic_storage)
 
     manager.add_task(task1)
 
