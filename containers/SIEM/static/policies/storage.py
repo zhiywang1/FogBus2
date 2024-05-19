@@ -4,7 +4,7 @@ class StoragePolicy:
     def apply(data):
         disk_util = data['data']['disk_usage']
 
-        threshold = 5
+        threshold = 50
         not_satisfied = []
         for device, utilization in disk_util.items():
             if utilization['percent'] > threshold:
