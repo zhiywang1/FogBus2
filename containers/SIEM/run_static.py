@@ -7,6 +7,7 @@ from utils.agent_talker import AgentTalker
 from static.policies.images import ImagesPolicy
 from static.policies.storage import StoragePolicy
 from static.policies.network import NetworkPolicy
+from static.policies.host_config import HostConfigPolicy
 
 
 def load_hosts():
@@ -82,10 +83,23 @@ async def task_static_network():
         email_notifier.send_email(subject, body)
 
 
+host_config_policy = HostConfigPolicy()
+
+
+async def task_static_host_config():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_static_host_config()
+        subject, body = host_config_policy.apply(resp)
+        if subject is None:
+            continue
+        body = format_body(agent_taker, body)
+        email_notifier.send_email(subject, body)
+
+
 if __name__ == "__main__":
     manager = TaskManager('SIME Static')
 
-    task1 = Task("Task1", 60, task_static_network)
+    task1 = Task("Task1", 60, task_static_host_config)
 
     manager.add_task(task1)
 
