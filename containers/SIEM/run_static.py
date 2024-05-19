@@ -99,8 +99,14 @@ async def task_static_host_config():
 if __name__ == "__main__":
     manager = TaskManager('SIME Static')
 
-    task1 = Task("Task1", 60, task_static_host_config)
+    tasks = [
+        Task("Scan Images", 600, task_static_images),
+        Task("Scan Storage", 600, task_static_storage),
+        Task("Scan Host Network Config", 600, task_static_network),
+        Task("Scan Host Config", 600, task_static_host_config)
+    ]
 
-    manager.add_task(task1)
+    for task in tasks:
+        manager.add_task(task)
 
     manager.run()
