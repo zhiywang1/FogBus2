@@ -1,3 +1,5 @@
+import dotenv
+import os
 from twisted.web.server import Site
 from twisted.web.resource import IResource
 from twisted.internet import reactor, endpoints
@@ -65,8 +67,11 @@ class SimpleRealm:
 
 
 if __name__ == "__main__":
+    dotenv.load_dotenv()
+    username = os.getenv("AGENT_BASIC_HTTP_USER")
+    password = os.getenv("AGENT_BASIC_HTTP_PASS")
     checker = InMemoryUsernamePasswordDatabaseDontUse()
-    checker.addUser(b'fogbus2', b'2subgof')
+    checker.addUser(username.encode('utf-8'), password.encode('utf-8'))
     protected_resource = AgentAPIROOT()
 
     portal = Portal(SimpleRealm(protected_resource), [checker])

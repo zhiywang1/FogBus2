@@ -7,36 +7,6 @@ from utils.dynamic.storage import ContainerStorageUtilization
 from utils.dynamic.network_host import SSUtilization
 
 
-class ContainersAPIHandler(Resource):
-    isLeaf = True
-
-    def __init__(self):
-        super().__init__()
-        self.docker_client = docker.from_env()
-
-    @format_get_request
-    def render_GET(self,
-                   data):
-        containers = self.docker_client.containers.list(all=True)
-        data = {
-            "status": "success",
-            "data": [container.image.id for container in containers]}
-        return data
-
-    @format_post_request
-    def render_POST(self,
-                    data):
-        if "action" not in data:
-            return {"status": "error", "message": "Action not found"}
-        if "container_id" not in data:
-            return {"status": "error", "message": "Container ID not found"}
-        if data["action"] == "stop":
-            container = self.docker_client.containers.get(data["container_id"])
-            container.stop()
-            return {"status": "success", "message": "Container stopped"}
-        return {"status": "error", "message": "Action not found"}
-
-
 class DynamicAPIHandler(Resource):
     isLeaf = False
 
@@ -97,3 +67,36 @@ class StorageHandler(Resource):
         storage.fetch_container_storage()
         data = {"status": "success", "data": storage.to_dict()}
         return data
+
+
+class ContainersAPIHandler(Resource):
+    isLeaf = True
+
+    def __init__(self):
+        super().__init__()
+        self.docker_client = docker.from_env()
+
+    @format_get_request
+    def render_GET(self,
+                   data):
+        containers = self.docker_client.containers.list(all=True)
+        data = {
+            "status": "success",
+            "data": [container.image.id for container in containers]}
+        return data
+
+    @format_post_request
+    def render_POST(self,
+                    data):
+        if "action" not in data:
+            return {"status": "error", "message": "Action not found"}
+        if "container_id" not in data:
+            return {"status": "error", "message": "Container ID not found"}
+        if data["action"] == "stop":
+            container = self.docker_client.containers.get(data["container_id"])
+            container.stop()
+            return {
+                "status": "success",
+                "message": "Container stopped",
+                "container_id": data["container_id"]}
+        return {"status": "error", "message": "Action not found"}

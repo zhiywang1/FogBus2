@@ -33,7 +33,7 @@ class ContainerManager:
         if previousName == newName:
             return
         self.tryDeletingContainerByName(newName)
-        container = self.dockerClient.containers.get(previousName)
+        container = self.dockerClient.containers._get(previousName)
         try:
             container.rename(newName)
             self.containerName = newName
@@ -43,7 +43,7 @@ class ContainerManager:
 
     def tryDeletingContainerByName(self, containerName: str):
         try:
-            container = self.dockerClient.containers.get(containerName)
+            container = self.dockerClient.containers._get(containerName)
             container.remove()
             self.basicComponent.debugLogger.warning(
                 '%s existed and has been deleted', containerName)
