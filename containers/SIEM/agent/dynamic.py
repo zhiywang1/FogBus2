@@ -79,10 +79,12 @@ class ContainersAPIHandler(Resource):
     @format_get_request
     def render_GET(self,
                    data):
-        containers = self.docker_client.containers.list(all=True)
+        containers = self.docker_client.containers.list()
         data = {
             "status": "success",
-            "data": [container.image.id for container in containers]}
+            "data": [{
+                "container_id": container.id,
+                "image_id": container.image.id} for container in containers]}
         return data
 
     @format_post_request

@@ -8,6 +8,9 @@ from dynamic.policies.computation import ComputationPolicy
 from dynamic.policies.network_host import NetworkHostPolicy
 from dynamic.policies.network_container import NetworkContainerPolicy
 from dynamic.policies.storage import StoragePolicy
+from dynamic.policies.container import ContainerPolicy
+
+
 def load_hosts():
     with open("hosts.list") as f:
         _hosts = f.readlines()
@@ -54,6 +57,7 @@ async def task_dynamic_computation():
         body = format_body(agent_taker, body)
         email_notifier.send_email(subject, body)
 
+
 network_host_policy = NetworkHostPolicy()
 
 
@@ -65,6 +69,7 @@ async def task_dynamic_network_host():
             continue
         body = format_body(agent_taker, body)
         email_notifier.send_email(subject, body)
+
 
 network_container_policy = NetworkContainerPolicy()
 
@@ -92,11 +97,34 @@ async def task_dynamic_storage():
         email_notifier.send_email(subject, body)
 
 
+container_policy = ContainerPolicy()
+
+
+async def task_dynamic_container():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_dynamic_containers()
+        subject, body, suspicious_containers = container_policy.apply(resp)
+        if subject is None:
+            continue
+        for container in suspicious_containers:
+            container_id = container['container_id']
+            agent_taker.post_dynamic_stop_container(container_id)
+        body = format_body(agent_taker, body)
+        email_notifier.send_email(subject, body)
+
+
 if __name__ == "__main__":
     manager = TaskManager('SIME Dynamic')
 
-    task1 = Task("Task1", 60, task_dynamic_storage)
+    tasks = [
+        Task("Monitor Dynamic Computation Utilization", 5, task_dynamic_computation),
+        Task("Monitor Dynamic Network Host Utilization", 5, task_dynamic_network_host),
+        Task("Monitor Dynamic Network Container Utilization", 5, task_dynamic_network_container),
+        Task("Monitor Dynamic Storage Utilization", 5, task_dynamic_storage),
+        Task("Monitor Dynamic Container Utilization", 5, task_dynamic_container)
+    ]
 
-    manager.add_task(task1)
+    for task in tasks:
+        manager.add_task(task)
 
     manager.run()
