@@ -5,6 +5,7 @@ from utils.task import Task
 from utils.notifier import EmailNotifier
 from utils.agent_talker import AgentTalker
 from static.policies.images import ImagesPolicy
+from static.policies.storage import StoragePolicy
 
 
 def load_hosts():
@@ -32,7 +33,7 @@ for host in hosts:
     agent_talkers.append(AgentTalker(
         hostname, port, http_basic_auth_user, http_basic_auth_pass))
 
-images_policy = ImagesPolicy(email_notifier=email_notifier)
+images_policy = ImagesPolicy()
 
 
 async def task_static_images():
@@ -48,10 +49,26 @@ async def task_static_images():
         email_notifier.send_email(subject, body)
 
 
+storage_policy = StoragePolicy()
+
+
+async def task_static_storage():
+    for agent_taker in agent_talkers:
+        resp = agent_taker.get_static_storage()
+        subject, body = storage_policy.apply(resp)
+        if subject is None:
+            continue
+        body = (f'IP: {agent_taker.ip}\r\n'
+                f'Port: {agent_taker.port}\r\n'
+                f'API: {agent_taker.base_url}\r\n'
+                f'\r\n{body}')
+        email_notifier.send_email(subject, body)
+
+
 if __name__ == "__main__":
     manager = TaskManager('SIME Static')
 
-    task1 = Task("Task1", 5, task_static_images)
+    task1 = Task("Task1", 10, task_static_storage)
 
     manager.add_task(task1)
 

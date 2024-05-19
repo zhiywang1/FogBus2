@@ -1,13 +1,10 @@
 class ImagesPolicy:
-    def __init__(self,
-                 email_notifier):
-        self.email_notifier = email_notifier
+    def __init__(self):
         self.valid_images = set(self.get_valid_images())
 
     @staticmethod
     def get_valid_images():
         with open('valid_images.list', 'r') as f:
-            # remove new line of each line
             return [line.strip() for line in f.readlines()]
 
     def apply(self,
