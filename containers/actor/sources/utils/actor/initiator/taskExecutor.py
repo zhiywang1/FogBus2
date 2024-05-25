@@ -96,6 +96,12 @@ class TaskExecutorInitiator(BaseInitiator):
         args += ' --containerName %s' % containerName
         args += ' --networkName %s' % networkName
         imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
+
+        if self.basicComponent.tls_enabled:
+            args += ' --enableTLS True'
+            args += ' --certFile server.crt'
+            args += ' --keyFile  server.key'
+
         self.initTaskExecutorInContainer(
             imageName=imageName, containerName=containerName, args=args, networkName=networkName)
 

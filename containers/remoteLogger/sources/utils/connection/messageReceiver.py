@@ -1,3 +1,4 @@
+import os.path
 import ssl
 from abc import abstractmethod
 from queue import Queue
@@ -58,6 +59,9 @@ class MessageReceiver(MessageSender):
         if self.tls_enabled:
             if not self.cert_file or not self.key_file:
                 self.debugLogger.error('TLS enabled but no cert or key file provided')
+            elif not os.path.exists(self.cert_file) or not os.path.exists(self.key_file):
+                self.debugLogger.error('TLS enabled but no cert or key file not exist in path: %s or %s',
+                                       self.cert_file, self.key_file)
                 terminate()
             else:
                 self.debugLogger.info('TLS enabled with cert file: %s and key file: %s', self.cert_file, self.key_file)
@@ -104,7 +108,9 @@ class MessageReceiver(MessageSender):
             request = ConnectionRequest(clientSocket, clientAddress)
             self.requests.put(request)
 
-    def tryListeningOn(self, addr: Address, portRange: Tuple[int, int]) -> bool:
+    def tryListeningOn(self,
+                       addr: Address,
+                       portRange: Tuple[int, int]) -> bool:
         ip, targetPort = '0.0.0.0', addr[1]
         portLower, portUpper = portRange
         if targetPort != 0 and \
@@ -125,13 +131,16 @@ class MessageReceiver(MessageSender):
                 return True
         return False
 
-    def wrap_socket_tls(self, socket_object, server_side=True):
+    def wrap_socket_tls(self,
+                        socket_object,
+                        server_side=True):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         context.load_cert_chain(self.cert_file, self.key_file)
         tls_socket = context.wrap_socket(socket_object, server_side=server_side)
         return tls_socket
 
-    def listenOn(self, addr: Address) -> bool:
+    def listenOn(self,
+                 addr: Address) -> bool:
         self.addr = (self.addr[0], addr[1])
         try:
             self.serverSocket.setsockopt(
@@ -162,7 +171,8 @@ class MessageReceiver(MessageSender):
             except OSError:
                 continue
 
-    def receiveMessage(self, clientSocket: socket) -> Tuple[Any, int]:
+    def receiveMessage(self,
+                       clientSocket: socket) -> Tuple[Any, int]:
         result = None
         buffer = b''
         if self.tls_enabled:

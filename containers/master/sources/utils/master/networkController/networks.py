@@ -60,7 +60,7 @@ class NetworkController:
             docker_network = self.docker_client.networks.create(driver='overlay', name=network_name,
                                                                 attachable=True)
         except Exception:
-            docker_network = self.docker_client.networks._get(network_name)
+            docker_network = self.docker_client.networks.get(network_name)
             pass
         network = Network(id=docker_network.id, request=request, status=NetworkStatus.ACTIVE, name=network_name)
         self.networks[request] = network
@@ -70,8 +70,8 @@ class NetworkController:
                                      container_name,
                                      network_name):
         try:
-            network = self.docker_client.networks._get(network_name)
-            container = self.docker_client.containers._get(container_name)
+            network = self.docker_client.networks.get(network_name)
+            container = self.docker_client.containers.get(container_name)
             network.connect(container)
         except Exception as e:
             print(e)
@@ -84,7 +84,7 @@ class NetworkController:
         network_name = self.generate_network_name(request)
 
         try:
-            docker_network = self.docker_client.networks._get(network_name)
+            docker_network = self.docker_client.networks.get(network_name)
             docker_network.remove()
         except Exception:
             pass

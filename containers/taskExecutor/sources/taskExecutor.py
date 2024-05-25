@@ -46,6 +46,7 @@ class TaskExecutor:
             remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
             portRange=ConfigTaskExecutor.portRange,
+            enableTLS=enableTLS,
             certFile=certFile,
             keyFile=keyFile)
         self.task: BaseTask = initTask(taskName)
@@ -213,7 +214,6 @@ def parseArg():
         '--enableTLS',
         metavar='EnableTLS',
         nargs='?',
-        default='',
         type=bool,
         help='enable TLS or not')
     parser.add_argument(
@@ -240,7 +240,6 @@ if __name__ == '__main__':
         args.childrenTaskTokens = []
     elif isinstance(args.childrenTaskTokens, str):
         args.childrenTaskTokens = args.childrenTaskTokens.split(',')
-
     taskExecutor_ = TaskExecutor(
         containerName=args.containerName,
         networkName=args.networkName,
