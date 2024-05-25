@@ -1,3 +1,4 @@
+import ssl
 from abc import abstractmethod
 from queue import Queue
 from socket import AF_INET
@@ -37,7 +38,10 @@ class MessageReceiver(MessageSender):
             ignoreSocketError: bool = False,
             messagesReceivedQueue: Queue[
                 Tuple[MessageReceived, int]] = Queue(),
-            threadNumber: int = 8):
+            threadNumber: int = 8,
+            cert_file: str = None,
+            key_file: str = None,
+            tls_enabled: bool = True):
         MessageSender.__init__(
             self,
             role=role,
@@ -48,6 +52,17 @@ class MessageReceiver(MessageSender):
         self.serverSocket = socket(
             AF_INET,
             SOCK_STREAM)
+        self.cert_file = cert_file
+        self.key_file = key_file
+        self.tls_enabled = tls_enabled
+        if self.tls_enabled:
+            if not self.cert_file or not self.key_file:
+                self.debugLogger.error('TLS enabled but no cert or key file provided')
+                terminate()
+            else:
+                self.debugLogger.info('TLS enabled with cert file: %s and key file: %s', self.cert_file, self.key_file)
+
+        self.tls_socket = None
         self.messagesReceivedQueue: Queue[
             Tuple[MessageReceived, int]] = messagesReceivedQueue
         self.threadsNumber: int = threadNumber
@@ -110,6 +125,12 @@ class MessageReceiver(MessageSender):
                 return True
         return False
 
+    def wrap_socket_tls(self, socket_object, server_side=True):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain(self.cert_file, self.key_file)
+        tls_socket = context.wrap_socket(socket_object, server_side=server_side)
+        return tls_socket
+
     def listenOn(self, addr: Address) -> bool:
         self.addr = (self.addr[0], addr[1])
         try:
@@ -124,7 +145,9 @@ class MessageReceiver(MessageSender):
             self.debugLogger.info(
                 'Advertise addr is at %s' % str(self.addr))
             return True
-        except OSError:
+        except Exception:
+            from traceback import print_exc
+            print_exc()
             return False
 
     def messageReceiver(self):
@@ -139,10 +162,11 @@ class MessageReceiver(MessageSender):
             except OSError:
                 continue
 
-    @staticmethod
-    def receiveMessage(clientSocket: socket) -> Tuple[Any, int]:
+    def receiveMessage(self, clientSocket: socket) -> Tuple[Any, int]:
         result = None
         buffer = b''
+        if self.tls_enabled:
+            clientSocket = self.wrap_socket_tls(clientSocket, server_side=True)
         try:
             clientSocket.settimeout(3)
             while len(buffer) < PAYLOAD_SIZE:

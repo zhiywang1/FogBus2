@@ -40,7 +40,10 @@ class Master:
             logLevel=logging.DEBUG,
             containerName: str = '',
             parsedArgs=None,
-            waitTimeout: int = 0):
+            waitTimeout: int = 0,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         self.parsedArgs = parsedArgs
 
         self.basicComponent = BasicComponent(
@@ -50,7 +53,10 @@ class Master:
             remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
             ignoreSocketError=True,
-            portRange=ConfigMaster.portRange)
+            portRange=ConfigMaster.portRange,
+            enableTLS=enableTLS,
+            certFile=certFile,
+            keyFile=keyFile)
 
         self.loggerManager = LoggerManager(basicComponent=self.basicComponent)
         self.containerManager = ContainerManager(
@@ -297,6 +303,27 @@ def parseArg():
         default='',
         type=str,
         help='container name')
+    parser.add_argument(
+        '--enableTLS',
+        metavar='EnableTLS',
+        nargs='?',
+        default='',
+        type=bool,
+        help='enable TLS or not')
+    parser.add_argument(
+        '--certFile',
+        metavar='CertFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Cert file')
+    parser.add_argument(
+        '--keyFile',
+        metavar='keyFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Key file')
 
     return parser.parse_args()
 
@@ -314,5 +341,8 @@ if __name__ == '__main__':
         minActors=args_.minimumActors,
         databaseType=args_.databaseType,
         parsedArgs=args_,
-        logLevel=args_.verbose)
+        logLevel=args_.verbose,
+        enableTLS=args_.enableTLS,
+        certFile=args_.certFile,
+        keyFile=args_.keyFile)
     master_.run()

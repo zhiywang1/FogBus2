@@ -1,4 +1,5 @@
 import struct
+import ssl
 from pprint import pformat
 from queue import Queue
 from socket import AF_INET
@@ -31,9 +32,12 @@ class MessageSender(Component, DebugLogPrinter):
             role: ComponentRole,
             addr: Address,
             logLevel: int,
-            ignoreSocketError: bool = False):
+            ignoreSocketError: bool = False,
+            tls_enabled: bool = False):
         DebugLogPrinter.__init__(self, logLevel)
         Component.__init__(self, role=role, addr=addr)
+        self.tls_enabled = tls_enabled
+
         self.messagesToSendQueue: Queue[
             Tuple[MessageToSend, bool, bool]] = Queue()
         self.ignoreSocketError = ignoreSocketError
@@ -44,6 +48,11 @@ class MessageSender(Component, DebugLogPrinter):
             destAddr: Address,
             retries: int = 5):
         clientSocket = socket(AF_INET, SOCK_STREAM)
+        if self.tls_enabled:
+            context = ssl.create_default_context()
+            context.check_hostname = False
+            context.verify_mode = ssl.CERT_NONE
+            clientSocket = context.wrap_socket(clientSocket, server_hostname=destAddr[0])
         try:
             clientSocket.settimeout(10)
             clientSocket.connect(destAddr)

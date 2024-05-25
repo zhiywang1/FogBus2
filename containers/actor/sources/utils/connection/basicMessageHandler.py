@@ -25,14 +25,20 @@ class BasicMessageHandler(MessageReceiver, ABC):
             addr: Address,
             logLevel: int,
             portRange: Tuple[int, int],
-            ignoreSocketError: bool = False):
+            ignoreSocketError: bool = False,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         MessageReceiver.__init__(
             self,
             role=role,
             addr=addr,
             logLevel=logLevel,
             ignoreSocketError=ignoreSocketError,
-            portRange=portRange)
+            portRange=portRange,
+            tls_enabled=enableTLS,
+            cert_file=certFile,
+            key_file=keyFile)
         self.receivedPacketSize: PairsMedian[
             str, SequenceMedian] = PairsMedian()
         self.delays: PairsMedian[str, SequenceMedian] = PairsMedian()

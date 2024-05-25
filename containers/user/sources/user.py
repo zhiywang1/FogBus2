@@ -32,7 +32,10 @@ class User:
             golInitText: str,
             containerName: str = '',
             csvPath: str = '',
-            logLevel=DEBUG):
+            logLevel=DEBUG,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         self.containerName = containerName
         self.basicComponent = BasicComponent(
             role=ComponentRole.USER,
@@ -40,7 +43,10 @@ class User:
             masterAddr=masterAddr,
             remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
-            portRange=ConfigUser.portRange)
+            portRange=ConfigUser.portRange,
+            enableTLS=enableTLS,
+            certFile=certFile,
+            keyFile=keyFile)
         self.resourcesDiscovery = ResourcesDiscovery(
             basicComponent=self.basicComponent)
         self.discoverIfUnset()
@@ -212,6 +218,27 @@ def parseArg():
         default='',
         type=str,
         help='path to csv file of diabetes prediction')
+    parser.add_argument(
+        '--enableTLS',
+        metavar='EnableTLS',
+        nargs='?',
+        default='',
+        type=bool,
+        help='enable TLS or not')
+    parser.add_argument(
+        '--certFile',
+        metavar='CertFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Cert file')
+    parser.add_argument(
+        '--keyFile',
+        metavar='keyFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Key file')
     return parser.parse_args()
 
 
@@ -228,5 +255,8 @@ if __name__ == "__main__":
         videoPath=args.videoPath,
         golInitText=args.golInitText,
         logLevel=args.verbose,
-        csvPath=args.csvPath)
+        csvPath=args.csvPath,
+        enableTLS=args.enableTLS,
+        certFile=args.certFile,
+        keyFile=args.keyFile)
     user_.run()

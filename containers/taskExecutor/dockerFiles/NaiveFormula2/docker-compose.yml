@@ -1,5 +1,3 @@
-version: '3'
-
 services:
 
   fogbus2-naive_formula2:

@@ -22,7 +22,10 @@ class BasicComponent(Communicator, ABC):
             logLevel: int,
             masterAddr: Address,
             remoteLoggerAddr: Address,
-            ignoreSocketError: bool = False):
+            ignoreSocketError: bool = False,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         Communicator.__init__(
             self,
             role=role,
@@ -31,7 +34,10 @@ class BasicComponent(Communicator, ABC):
             masterAddr=masterAddr,
             remoteLoggerAddr=remoteLoggerAddr,
             ignoreSocketError=ignoreSocketError,
-            portRange=portRange)
+            portRange=portRange,
+            enableTLS=enableTLS,
+            certFile=certFile,
+            keyFile=keyFile)
         self.handleSignal()
         self.serveEvent.wait()
         self.setName(addr=self.addr)
@@ -44,6 +50,9 @@ class BasicComponent(Communicator, ABC):
         self.exitTries += 1
         self.debugLogger.info(
             '[*] Exiting ... (%d/%d)', self.exitTries, self.maxExitTries)
+        if self.exitTries >= self.maxExitTries:
+            terminate()
+            return
         if self.role in {ComponentRole.MASTER, ComponentRole.REMOTE_LOGGER}:
             terminate()
             return
@@ -53,9 +62,6 @@ class BasicComponent(Communicator, ABC):
             messageSubType=MessageSubType.EXIT,
             data=data,
             destination=self.master)
-        if self.exitTries >= self.maxExitTries:
-            terminate()
-            return
 
     def handleSignal(self):
         signal.signal(signal.SIGINT, self.signalHandler)

@@ -35,14 +35,19 @@ class TaskExecutor:
             cpuFreq: float,
             containerName: str = '',
             networkName: str = '',
-            logLevel=logging.DEBUG):
+            logLevel=logging.DEBUG,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         self.basicComponent = BasicComponent(
             role=ComponentRole.TASK_EXECUTOR,
             addr=addr,
             masterAddr=masterAddr,
             remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
-            portRange=ConfigTaskExecutor.portRange)
+            portRange=ConfigTaskExecutor.portRange,
+            certFile=certFile,
+            keyFile=keyFile)
         self.task: BaseTask = initTask(taskName)
         if self.task is None:
             self.basicComponent.debugLogger.error(
@@ -204,6 +209,27 @@ def parseArg():
         default='',
         type=str,
         help='networkName')
+    parser.add_argument(
+        '--enableTLS',
+        metavar='EnableTLS',
+        nargs='?',
+        default='',
+        type=bool,
+        help='enable TLS or not')
+    parser.add_argument(
+        '--certFile',
+        metavar='CertFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Cert file')
+    parser.add_argument(
+        '--keyFile',
+        metavar='keyFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Key file')
     return parser.parse_args()
 
 
@@ -228,5 +254,8 @@ if __name__ == '__main__':
         actorID=args.actorID,
         totalCPUCores=args.totalCPUCores,
         cpuFreq=args.cpuFrequency,
-        logLevel=args.verbose)
+        logLevel=args.verbose,
+        enableTLS=args.enableTLS,
+        certFile=args.certFile,
+        keyFile=args.keyFile)
     taskExecutor_.run()

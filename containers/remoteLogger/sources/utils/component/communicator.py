@@ -25,14 +25,20 @@ class Communicator(BasicMessageHandler, ABC):
             logLevel: int,
             masterAddr: Address,
             remoteLoggerAddr: Address,
-            ignoreSocketError: bool = False):
+            ignoreSocketError: bool = False,
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         BasicMessageHandler.__init__(
             self,
             role=role,
             addr=addr,
             logLevel=logLevel,
             ignoreSocketError=ignoreSocketError,
-            portRange=portRange)
+            portRange=portRange,
+            enableTLS=enableTLS,
+            certFile=certFile,
+            keyFile=keyFile)
         self.serveEvent.wait()
         self.me = Component(
             hostID=self.hostID,

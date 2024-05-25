@@ -24,7 +24,10 @@ class Actor:
             masterAddr,
             remoteLoggerAddr,
             logLevel=logging.DEBUG,
-            containerName=''):
+            containerName='',
+            enableTLS: bool = False,
+            certFile: str = '',
+            keyFile: str = ''):
         self.basicComponent = BasicComponent(
             ignoreSocketError=True,
             role=ComponentRole.ACTOR,
@@ -32,7 +35,10 @@ class Actor:
             logLevel=logLevel,
             masterAddr=masterAddr,
             remoteLoggerAddr=remoteLoggerAddr,
-            portRange=ConfigActor.portRange)
+            portRange=ConfigActor.portRange,
+            enableTLS=enableTLS,
+            certFile=certFile,
+            keyFile=keyFile)
         self.resourcesDiscovery = ResourcesDiscovery(
             basicComponent=self.basicComponent)
         self.discoverIfUnset()
@@ -175,6 +181,27 @@ def parseArg():
         default=10,
         type=int,
         help='Reference python logging level, from 0 to 50 integer to show log')
+    parser.add_argument(
+        '--enableTLS',
+        metavar='EnableTLS',
+        nargs='?',
+        default='',
+        type=bool,
+        help='enable TLS or not')
+    parser.add_argument(
+        '--certFile',
+        metavar='CertFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Cert file')
+    parser.add_argument(
+        '--keyFile',
+        metavar='keyFile',
+        nargs='?',
+        default='',
+        type=str,
+        help='Key file')
 
     return parser.parse_args()
 
@@ -186,5 +213,8 @@ if __name__ == '__main__':
         masterAddr=(args.masterIP, args.masterPort),
         remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         containerName=args.containerName,
-        logLevel=args.verbose)
+        logLevel=args.verbose,
+        enableTLS=args.enableTLS,
+        certFile=args.certFile,
+        keyFile=args.keyFile)
     actor_.run()
