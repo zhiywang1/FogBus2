@@ -1,3 +1,5 @@
 twisted
 pyOpenSSL
 service_identity
+python-dotenv
+requests

@@ -33,10 +33,10 @@ class ContainerStorageUtilization:
                                               write_bytes=0,
                                               total_bytes=0)
 
-            # Get container's storage statistics
             stats = container.stats(stream=False)
             blkio_stats = stats['blkio_stats']['io_service_bytes_recursive']
-
+            if blkio_stats is None:
+                continue
             for entry in blkio_stats:
                 if entry['op'] == 'Read':
                     container_info.read_bytes += entry['value']

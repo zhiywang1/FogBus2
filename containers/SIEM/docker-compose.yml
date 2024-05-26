@@ -1,0 +1,30 @@
+services:
+
+  fogbus2-siem-static:
+    image: cloudslab/fogbus2-siem-static:1.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./sources:/workplace
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
+    entrypoint: [ "python", "run_static.py" ]
+    restart: unless-stopped
+
+
+  fogbus2-siem-dynamic:
+    image: cloudslab/fogbus2-siem-dynamic:1.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./sources:/workplace
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
+    entrypoint: [ "python", "run_dynamic.py" ]
+    restart: unless-stopped
