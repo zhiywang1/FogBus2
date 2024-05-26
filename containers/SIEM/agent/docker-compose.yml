@@ -1,0 +1,21 @@
+services:
+
+  fogbus2-siem-agent:
+    image: cloudslab/fogbus2-siem-agent:1.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./sources:/workplace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc:/etc
+      - /lib/modules:/lib/modules
+      - /usr:/usr
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
+    privileged: true
+    restart: unless-stopped
+
+

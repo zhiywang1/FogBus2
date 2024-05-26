@@ -1,0 +1,4 @@
+twisted
+python-dotenv
+docker
+psutil

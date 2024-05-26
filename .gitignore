@@ -5,7 +5,7 @@
 *.mp4
 *.json
 *.jpg
-*.txt
+*.list
 src/nginx/nginx.conf
 **__pycache__
 .idea
