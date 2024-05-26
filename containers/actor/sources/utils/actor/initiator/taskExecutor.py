@@ -122,7 +122,7 @@ class TaskExecutorInitiator(BaseInitiator):
             self.dockerClient.containers.run(
                 name=containerName,
                 detach=True,
-                auto_remove=True,
+                # auto_remove=True,
                 image=imageName,
                 network=networkName,
                 working_dir='/workplace',

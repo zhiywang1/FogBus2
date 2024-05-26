@@ -1,19 +1,23 @@
 import struct
 import ssl
-from pprint import pformat
+import socket
+import threading
+from abc import abstractmethod
+from threading import Lock
 from queue import Queue
 from socket import AF_INET
 from socket import SOCK_STREAM
 from socket import socket
-from time import sleep
-from time import time
-from traceback import print_exc as printExc
+from time import time, sleep
+from traceback import print_exc
 from typing import Dict
 from typing import Tuple
+from struct import calcsize
+from struct import unpack
 
 from .message import MessageToSend
 from ..debugLogPrinter import DebugLogPrinter
-from ..tools import encrypt
+from ..tools import encrypt, decrypt
 from ..tools import terminate
 from ..types import Address
 from ..types import Component
@@ -22,7 +26,160 @@ from ..types import MessageSubSubType
 from ..types import MessageSubType
 from ..types import MessageType
 
+from .message import MessageReceived
+
 FORMAT = '>L'
+PAYLOAD_SIZE = calcsize(FORMAT)
+
+
+def receive_message(clientSocket: socket):
+    buffer = b''
+    while len(buffer) < PAYLOAD_SIZE:
+        t = clientSocket.recv(4096)
+        if not t:
+            raise 'Received empty data'
+        buffer += t
+        if t[-1] == b'$':
+            buffer = buffer[:-1]
+            break
+    packedDataSize = buffer[:PAYLOAD_SIZE]
+    buffer = buffer[PAYLOAD_SIZE:]
+    dataSize = unpack(FORMAT, packedDataSize)[0]
+    while len(buffer) < dataSize:
+        buffer += clientSocket.recv(4096)
+    data = buffer[:dataSize]
+    return decrypt(data), len(data)
+
+
+class Connection:
+    def __init__(self,
+                 tls_enabled,
+                 recv_queue,
+                 send_queue,
+                 addr=None,
+                 socket_obj=None,
+                 max_retries=10,
+                 retry_delay=1):
+        self.tls_enabled = tls_enabled
+        self.is_proactive = socket_obj is None
+        self.addr = addr
+        self.socket = socket_obj
+        self.recv_queue = recv_queue
+        self.send_queue = send_queue
+        self.max_retries = max_retries
+        self.retry_delay = retry_delay
+        self.threads = []
+
+        if self.is_proactive:
+            self._connect_with_retries()
+            self._start_threads()
+        else:
+            if not self.socket:
+                raise ValueError("A socket object must be provided for passive mode")
+            self._start_threads()
+
+    def _connect_with_retries(self):
+        attempts = 0
+        while attempts < self.max_retries:
+            try:
+                self.socket = create_socket(tls_enabled=self.tls_enabled, dest_addr=self.addr)
+                return
+            except Exception as e:
+                attempts += 1
+                sleep(self.retry_delay)
+        raise Exception(f"Failed to connect to {self.addr} after {self.max_retries} attempts")
+
+    def _start_threads(self):
+        self.recv_thread = threading.Thread(target=self._recv_task)
+        self.send_thread = threading.Thread(target=self._send_task)
+        self.recv_thread.daemon = True
+        self.send_thread.daemon = True
+        self.recv_thread.start()
+        self.send_thread.start()
+        self.threads.append(self.recv_thread)
+        self.threads.append(self.send_thread)
+
+    def _recv_task(self):
+        while True:
+            try:
+                content, packetSize = receive_message(self.socket)
+                if content:
+                    message = MessageReceived.fromDict(content)
+                    self.recv_queue.put((message, packetSize))
+                else:
+                    self._handle_socket_error("Connection closed by the server")
+                    break
+            except Exception as e:
+                self._handle_socket_error(f"Receive error: {e}")
+                break
+
+    def _send_task(self):
+        while True:
+            messageInDict = self.send_queue.get()
+            messageInBytes = encrypt(messageInDict)
+            package = struct.pack(FORMAT, len(messageInBytes)) + messageInBytes
+            try:
+                self.socket.sendall(package)
+            except Exception as e:
+                self._handle_socket_error(f"Send error: {e}", messageInDict)
+                break
+
+    def _handle_socket_error(self,
+                             message,
+                             send_data=None):
+        self.socket.close()
+        if self.is_proactive == 'proactive':
+            self._connect_with_retries()
+            self._start_threads()
+        else:
+            if send_data:
+                self.send_queue.put(send_data)
+            self._terminate_threads()
+            raise Exception(message)
+
+    def _terminate_threads(self):
+        for thread in self.threads:
+            if thread.is_alive():
+                try:
+                    thread.join()
+                except Exception:
+                    pass
+        self.threads.clear()
+
+    def send_message(self,
+                     message):
+        self.send_queue.put(message)
+
+    def close(self):
+        self.socket.close()
+        self._terminate_threads()
+
+
+def create_socket(tls_enabled: bool,
+                  dest_addr: Address):
+    client_socket = socket(AF_INET, SOCK_STREAM)
+    if tls_enabled:
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        client_socket = context.wrap_socket(client_socket,
+                                            server_hostname=dest_addr[0])
+
+        client_socket.connect(dest_addr)
+    return client_socket
+
+
+class Connections(dict):
+
+    def __init__(self):
+        super().__init__()
+        self._lock = Lock()
+
+    def acquire(self):
+        self._lock.acquire()
+
+    def release(self):
+        self._lock.release()
 
 
 class MessageSender(Component, DebugLogPrinter):
@@ -32,6 +189,9 @@ class MessageSender(Component, DebugLogPrinter):
             role: ComponentRole,
             addr: Address,
             logLevel: int,
+            messagesReceivedQueue: Queue[
+                Tuple[MessageReceived, int]],
+            conns: Connections[str, Connection],
             ignoreSocketError: bool = False,
             tls_enabled: bool = False):
         DebugLogPrinter.__init__(self, logLevel)
@@ -40,44 +200,9 @@ class MessageSender(Component, DebugLogPrinter):
 
         self.messagesToSendQueue: Queue[
             Tuple[MessageToSend, bool, bool]] = Queue()
+        self.messagesReceivedQueue = messagesReceivedQueue
         self.ignoreSocketError = ignoreSocketError
-
-    def sendBytes(
-            self,
-            messageInBytes: bytes,
-            destAddr: Address,
-            retries: int = 5):
-        clientSocket = socket(AF_INET, SOCK_STREAM)
-        if self.tls_enabled:
-            context = ssl.create_default_context()
-            context.check_hostname = False
-            context.verify_mode = ssl.CERT_NONE
-            clientSocket = context.wrap_socket(clientSocket, server_hostname=destAddr[0])
-        try:
-            clientSocket.settimeout(10)
-            clientSocket.connect(destAddr)
-            package = struct.pack(FORMAT, len(messageInBytes)) + messageInBytes
-            clientSocket.sendall(package)
-            clientSocket.close()
-        except OSError:
-            clientSocket.close()
-            if retries > 0:
-                self.resendBytes(messageInBytes, destAddr, retries - 1)
-                return
-            raise OSError
-        except ConnectionRefusedError:
-            clientSocket.close()
-            sleep(3)
-            if retries > 0:
-                self.resendBytes(messageInBytes, destAddr, retries - 1)
-                return
-            raise ConnectionRefusedError
-
-    def resendBytes(self, message: bytes, destination: Address, retries: int):
-        sleep(0.1)
-        self.sendBytes(messageInBytes=message,
-                       destAddr=destination,
-                       retries=retries - 1)
+        self.conns = conns
 
     def sendMessage(
             self,
@@ -106,30 +231,30 @@ class MessageSender(Component, DebugLogPrinter):
         self.messagesToSendQueue.put(
             (messageToSend, ignoreSocketError, showFailure))
 
-    def messageSender(self, retries: int = 10):
+    @abstractmethod
+    def _receiving_helper(self,
+                          source_addr: Address,
+                          thread_name: str):
+        raise NotImplementedError
+
+    def messageSender(self):
         while True:
-            messageToSend, ignoreSocketError, showFailure = self.messagesToSendQueue.get()
-            messageInDict = messageToSend.toDict()
-            messageInDict['source'] = self.toDict()
             try:
-                messageInBytes = encrypt(messageInDict)
-                self.sendBytes(
-                    messageInBytes=messageInBytes,
-                    destAddr=messageToSend.destination.addr,
-                    retries=retries)
-            except (ConnectionRefusedError, OSError):
-                if ignoreSocketError is None:
-                    ignoreSocketError = self.ignoreSocketError
-                if not ignoreSocketError:
-                    printExc()
-                if showFailure:
-                    self.debugLogger.debug(
-                        'Failed to send message: %s \n %s',
-                        messageToSend.destination.nameLogPrinting,
-                        pformat(messageInDict))
-                sleep(1)
-                self.messagesToSendQueue.put(
-                    (messageToSend, ignoreSocketError, showFailure))
-                if ignoreSocketError:
-                    continue
-                terminate()
+                messageToSend, ignoreSocketError, showFailure = self.messagesToSendQueue.get()
+                messageInDict = messageToSend.toDict()
+                messageInDict['source'] = self.toDict()
+                dest_addr = messageToSend.destination.addr
+                self.conns.acquire()
+                if dest_addr not in self.conns:
+                    conn = Connection(tls_enabled=self.tls_enabled,
+                                      recv_queue=self.messagesReceivedQueue,
+                                      send_queue=Queue(),
+                                      addr=dest_addr)
+                    self.conns[dest_addr] = conn
+                else:
+                    conn = self.conns[dest_addr]
+                self.conns.release()
+                conn.send_message(messageInDict)
+
+            except Exception:
+                print_exc()

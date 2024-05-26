@@ -3,24 +3,19 @@ import ssl
 from abc import abstractmethod
 from queue import Queue
 from socket import AF_INET
-from socket import error
 from socket import SO_REUSEADDR
 from socket import SOCK_STREAM
 from socket import socket
 from socket import SOL_SOCKET
 from struct import calcsize
-from struct import unpack
 from threading import Event
 from threading import Thread
 from traceback import print_exc
-from typing import Any
 from typing import Tuple
 
 from .message import MessageReceived
 from .messageSender import FORMAT
-from .messageSender import MessageSender
-from .request import ConnectionRequest
-from ..tools import decrypt
+from .messageSender import MessageSender, Connection, Connections, receive_message
 from ..tools.terminate import terminate
 from ..types import Address
 from ..types import ComponentRole
@@ -43,12 +38,18 @@ class MessageReceiver(MessageSender):
             cert_file: str = None,
             key_file: str = None,
             tls_enabled: bool = True):
+
+        self.conns: Connections[str, Connection] = Connections()
+        self.messagesReceivedQueue: Queue[
+            Tuple[MessageReceived, int]] = messagesReceivedQueue
         MessageSender.__init__(
             self,
             role=role,
             addr=addr,
             logLevel=logLevel,
-            ignoreSocketError=ignoreSocketError)
+            messagesReceivedQueue=self.messagesReceivedQueue,
+            ignoreSocketError=ignoreSocketError,
+            conns=self.conns)
         self.portRange = portRange
         self.serverSocket = socket(
             AF_INET,
@@ -67,26 +68,25 @@ class MessageReceiver(MessageSender):
                 self.debugLogger.info('TLS enabled with cert file: %s and key file: %s', self.cert_file, self.key_file)
 
         self.tls_socket = None
-        self.messagesReceivedQueue: Queue[
-            Tuple[MessageReceived, int]] = messagesReceivedQueue
+
         self.threadsNumber: int = threadNumber
-        self.requests: Queue[ConnectionRequest] = Queue()
         self.serveEvent: Event = Event()
         self.autoListen()
         self.prepareThreadsPool()
 
     def prepareThreadsPool(self):
+        j = 0
         for i in range(self.threadsNumber):
             Thread(
-                target=self.messageReceiver,
-                name="MessageReceiver-%d" % i).start()
-            Thread(
                 target=self.messageSender,
-                name="MessageSender-%d" % i).start()
-            for _ in range(2):
+                name=f'MessageSender{j}').start()
+            j += 1
+            k = 0
+            for _ in range(4):
                 Thread(
                     target=self.handle,
-                    name="BasicMessageHandler-%d" % i).start()
+                    name=f"BasicMessageHandler{j}-{k}").start()
+                k += 1
         Thread(target=self.serve, name="ConnectionServer").start()
 
     def autoListen(self):
@@ -101,12 +101,30 @@ class MessageReceiver(MessageSender):
             terminate()
 
     def serve(self):
-
         self.serveEvent.set()
+        i = 0
         while True:
-            clientSocket, clientAddress = self.serverSocket.accept()
-            request = ConnectionRequest(clientSocket, clientAddress)
-            self.requests.put(request)
+            try:
+                client_socket, clientAddress = self.serverSocket.accept()
+                if self.tls_enabled:
+                    client_socket = self.wrap_socket_tls(client_socket, server_side=True)
+                self.debugLogger.info(f'KEEP RECEIVING: {clientAddress}')
+                content, packetSize = receive_message(client_socket)
+                message = MessageReceived.fromDict(content)
+                source_addr = message.source.addr
+                self.conns.acquire()
+                if source_addr not in self.conns or client_socket != self.conns[source_addr].socket:
+                    self.conns[source_addr] = Connection(
+                        tls_enabled=self.tls_enabled,
+                        recv_queue=self.messagesReceivedQueue,
+                        send_queue=Queue(),
+                        socket_obj=client_socket,
+                        addr=source_addr)
+                self.conns.release()
+                self.messagesReceivedQueue.put((message, packetSize))
+                i += 1
+            except Exception:
+                print_exc()
 
     def tryListeningOn(self,
                        addr: Address,
@@ -158,42 +176,6 @@ class MessageReceiver(MessageSender):
             from traceback import print_exc
             print_exc()
             return False
-
-    def messageReceiver(self):
-        while True:
-            try:
-                request = self.requests.get()
-                content, packetSize = self.receiveMessage(request.clientSocket)
-                if packetSize == 0:
-                    continue
-                message = MessageReceived.fromDict(content)
-                self.messagesReceivedQueue.put((message, packetSize))
-            except OSError:
-                continue
-
-    def receiveMessage(self,
-                       clientSocket: socket) -> Tuple[Any, int]:
-        result = None
-        buffer = b''
-        if self.tls_enabled:
-            clientSocket = self.wrap_socket_tls(clientSocket, server_side=True)
-        try:
-            clientSocket.settimeout(3)
-            while len(buffer) < PAYLOAD_SIZE:
-                buffer += clientSocket.recv(4096)
-            packedDataSize = buffer[:PAYLOAD_SIZE]
-            buffer = buffer[PAYLOAD_SIZE:]
-            dataSize = unpack(FORMAT, packedDataSize)[0]
-            while len(buffer) < dataSize:
-                buffer += clientSocket.recv(4096)
-            data = buffer[:dataSize]
-            result = data
-        except (OSError, error):
-            pass
-        clientSocket.close()
-        if result is None:
-            return {}, 0
-        return decrypt(result), len(result)
 
     @abstractmethod
     def handle(self):

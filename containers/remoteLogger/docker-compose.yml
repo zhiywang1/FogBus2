@@ -13,10 +13,4 @@ services:
       PGID: 1000
       TZ: Australia/Melbourne
     restart: unless-stopped
-    networks:
-      - fogbus2
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-networks:
-  fogbus2:
-    external: true
+    network_mode: host

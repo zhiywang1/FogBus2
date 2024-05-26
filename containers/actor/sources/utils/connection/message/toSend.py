@@ -24,6 +24,7 @@ class MessageToSend(Message, ABC):
             messageSubSubType=messageSubSubType,
             data=data)
         self.destination = destination
+        self.ttl = 3
 
     @staticmethod
     def fromDict(messageInDict: Dict):

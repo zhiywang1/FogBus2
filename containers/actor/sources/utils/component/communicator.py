@@ -13,7 +13,7 @@ from ..types import ComponentRole
 
 
 class Communicator(BasicMessageHandler, ABC):
-    locks: DefaultDict[str, Lock] = defaultdict(lambda: Lock())
+    sender_locks: DefaultDict[str, Lock] = defaultdict(lambda: Lock())
     networkTimeDiff: Dict[Tuple[str, int], float] = {}
     isRegistered: Event = Event()
 

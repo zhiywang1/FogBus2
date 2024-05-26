@@ -44,7 +44,7 @@ class Estimator:
         """
         availableActors = {}
         for taskName in self.taskList:
-            imageName = 'fogbus2-%s:latest' % camelToSnake(taskName)
+            imageName = 'fogbus2-%s:1.0' % camelToSnake(taskName)
             availableActors[taskName] = []
             if not self.isContainerMode:
                 availableActors[taskName] = allActors
