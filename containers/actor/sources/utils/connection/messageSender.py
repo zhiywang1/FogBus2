@@ -37,7 +37,7 @@ def receive_message(clientSocket: socket):
     while len(buffer) < PAYLOAD_SIZE:
         t = clientSocket.recv(4096)
         if not t:
-            raise 'Received empty data'
+            raise Exception('Received empty data')
         buffer += t
         if t[-1] == b'$':
             buffer = buffer[:-1]
@@ -128,7 +128,7 @@ class Connection:
                              message,
                              send_data=None):
         self.socket.close()
-        if self.is_proactive == 'proactive':
+        if self.is_proactive:
             self._connect_with_retries()
             self._start_threads()
         else:
