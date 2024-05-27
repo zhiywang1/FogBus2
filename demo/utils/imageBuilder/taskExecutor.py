@@ -15,6 +15,7 @@ class TaskExecutorImageBuilder:
 
     def build(
             self,
+            image_tag,
             proxy: str = None,
             platforms: str = '',
             dockerHubUsername: str = '',
@@ -30,6 +31,7 @@ class TaskExecutorImageBuilder:
                 folderAbsPath, folderAbsPath))
             if platforms != '':
                 ret = self.crossCompile(
+                    image_tag=image_tag,
                     composeFolder=folderAbsPath,
                     proxy=proxy,
                     platforms=platforms,
@@ -52,6 +54,7 @@ class TaskExecutorImageBuilder:
 
     @staticmethod
     def crossCompile(
+            image_tag: str,
             composeFolder: str,
             proxy: str = None,
             platforms: str = 'linux/amd64,'
@@ -61,6 +64,7 @@ class TaskExecutorImageBuilder:
             dockerHubUsername: str = '',
             push: bool = False):
         return crossCompileBase(
+            image_tag=image_tag,
             composeFolder=composeFolder,
             proxy=proxy,
             platforms=platforms,

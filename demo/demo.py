@@ -25,6 +25,7 @@ class Demo:
             remoteLoggerImageBuilder = RemoteLoggerImageBuilder()
             self.debugLogger.info('Building RemoteLogger Image...')
             remoteLoggerImageBuilder.build(
+                image_tag=self.args.imageTag,
                 proxy=proxy,
                 platforms=self.args.platforms,
                 dockerHubUsername=self.args.dockerHubUsername,
@@ -35,6 +36,7 @@ class Demo:
             masterImageBuilder = MasterImageBuilder()
             self.debugLogger.info('Building Master Image...')
             masterImageBuilder.build(
+                image_tag=self.args.imageTag,
                 proxy=proxy,
                 platforms=self.args.platforms,
                 dockerHubUsername=self.args.dockerHubUsername,
@@ -45,6 +47,7 @@ class Demo:
             actorImageBuilder = ActorImageBuilder()
             self.debugLogger.info('Building Actor Image...')
             actorImageBuilder.build(
+                image_tag=self.args.imageTag,
                 proxy=proxy,
                 platforms=self.args.platforms,
                 dockerHubUsername=self.args.dockerHubUsername,
@@ -55,6 +58,7 @@ class Demo:
             taskExecutorImageBuilder = TaskExecutorImageBuilder()
             self.debugLogger.info('Building TaskExecutor Image...')
             taskExecutorImageBuilder.build(
+                image_tag=self.args.imageTag,
                 proxy=proxy,
                 platforms=self.args.platforms,
                 dockerHubUsername=self.args.dockerHubUsername,
@@ -65,6 +69,7 @@ class Demo:
             userImageBuilder = UserImageBuilder()
             self.debugLogger.info('Building User Image...')
             userImageBuilder.build(
+                image_tag=self.args.imageTag,
                 proxy=proxy,
                 platforms=self.args.platforms,
                 dockerHubUsername=self.args.dockerHubUsername,
@@ -308,6 +313,13 @@ def prepareParser():
         type=str,
         default='127.0.0.1',
         help='Which IP to use')
+    parser.add_argument(
+        '--imageTag',
+        metavar='ImageTag',
+        nargs='?',
+        type=str,
+        default='0.1',
+        help='Image Tag')
     parser.add_argument(
         '--verbose',
         metavar='Verbose',
