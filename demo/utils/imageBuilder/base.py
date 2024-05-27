@@ -21,7 +21,7 @@ def crossCompileBase(
                    ' --build-arg https_proxy=%s' % proxy
     basename = camelToSnake(basename)
     if len(dockerHubUsername):
-        command += ' -t %s/fogbus2-%s' % (dockerHubUsername,
+        command += ' -t %s/fogbus2-%s:0.1' % (dockerHubUsername,
                                           basename)
     if push:
         command += ' --push'
