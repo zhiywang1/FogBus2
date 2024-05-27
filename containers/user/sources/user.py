@@ -35,7 +35,8 @@ class User:
             logLevel=DEBUG,
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         self.containerName = containerName
         self.basicComponent = BasicComponent(
             role=ComponentRole.USER,
@@ -46,7 +47,8 @@ class User:
             portRange=ConfigUser.portRange,
             enableTLS=enableTLS,
             certFile=certFile,
-            keyFile=keyFile)
+            keyFile=keyFile,
+            domainName=domainName)
         self.resourcesDiscovery = ResourcesDiscovery(
             basicComponent=self.basicComponent)
         self.discoverIfUnset()
@@ -239,6 +241,14 @@ def parseArg():
         default='',
         type=str,
         help='Key file')
+    parser.add_argument(
+        '--domainName',
+        metavar='domainName',
+        nargs='?',
+        default='fogbus2',
+        type=str,
+        help='Domain Name')
+
     return parser.parse_args()
 
 
@@ -258,5 +268,6 @@ if __name__ == "__main__":
         csvPath=args.csvPath,
         enableTLS=args.enableTLS,
         certFile=args.certFile,
-        keyFile=args.keyFile)
+        keyFile=args.keyFile,
+        domainName=args.domainName)
     user_.run()

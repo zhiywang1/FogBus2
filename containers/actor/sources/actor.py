@@ -27,7 +27,8 @@ class Actor:
             containerName='',
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         self.basicComponent = BasicComponent(
             ignoreSocketError=True,
             role=ComponentRole.ACTOR,
@@ -38,7 +39,8 @@ class Actor:
             portRange=ConfigActor.portRange,
             enableTLS=enableTLS,
             certFile=certFile,
-            keyFile=keyFile)
+            keyFile=keyFile,
+            domainName=domainName)
         self.resourcesDiscovery = ResourcesDiscovery(
             basicComponent=self.basicComponent)
         self.discoverIfUnset()
@@ -113,7 +115,8 @@ class Actor:
     def register(self):
         self.basicComponent.debugLogger.info('Profiling...')
         self.profiler.profileAll()
-        data = {'actorResources': self.profiler.resources.toDict()}
+        data = {'actorResources': self.profiler.resources.toDict(),
+                'domainName': self.basicComponent.domainName}
         self.basicComponent.debugLogger.info('Registering...')
         try:
             self.basicComponent.sendMessage(
@@ -202,6 +205,13 @@ def parseArg():
         default='',
         type=str,
         help='Key file')
+    parser.add_argument(
+        '--domainName',
+        metavar='domainName',
+        nargs='?',
+        default='fogbus2',
+        type=str,
+        help='Domain Name')
 
     return parser.parse_args()
 
@@ -216,5 +226,6 @@ if __name__ == '__main__':
         logLevel=args.verbose,
         enableTLS=args.enableTLS,
         certFile=args.certFile,
-        keyFile=args.keyFile)
+        keyFile=args.keyFile,
+        domainName=args.domainName)
     actor_.run()

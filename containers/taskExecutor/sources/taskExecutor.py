@@ -38,7 +38,8 @@ class TaskExecutor:
             logLevel=logging.DEBUG,
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         self.basicComponent = BasicComponent(
             role=ComponentRole.TASK_EXECUTOR,
             addr=addr,
@@ -48,7 +49,8 @@ class TaskExecutor:
             portRange=ConfigTaskExecutor.portRange,
             enableTLS=enableTLS,
             certFile=certFile,
-            keyFile=keyFile)
+            keyFile=keyFile,
+            domainName=domainName)
         self.task: BaseTask = initTask(taskName)
         if self.task is None:
             self.basicComponent.debugLogger.error(
@@ -230,6 +232,14 @@ def parseArg():
         default='',
         type=str,
         help='Key file')
+    parser.add_argument(
+        '--domainName',
+        metavar='domainName',
+        nargs='?',
+        default='fogbus2',
+        type=str,
+        help='Domain Name')
+
     return parser.parse_args()
 
 
@@ -256,5 +266,6 @@ if __name__ == '__main__':
         logLevel=args.verbose,
         enableTLS=args.enableTLS,
         certFile=args.certFile,
-        keyFile=args.keyFile)
+        keyFile=args.keyFile,
+        domainName=args.domainName)
     taskExecutor_.run()

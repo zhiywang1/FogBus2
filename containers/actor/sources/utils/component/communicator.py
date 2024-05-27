@@ -28,7 +28,8 @@ class Communicator(BasicMessageHandler, ABC):
             ignoreSocketError: bool = False,
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         BasicMessageHandler.__init__(
             self,
             role=role,
@@ -50,6 +51,7 @@ class Communicator(BasicMessageHandler, ABC):
         self.remoteLogger = Component(
             role=ComponentRole.REMOTE_LOGGER,
             addr=remoteLoggerAddr)
+        self.domainName = domainName
 
     def setName(
             self,

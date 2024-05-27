@@ -43,7 +43,8 @@ class Master:
             waitTimeout: int = 0,
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         self.parsedArgs = parsedArgs
 
         self.basicComponent = BasicComponent(
@@ -56,7 +57,8 @@ class Master:
             portRange=ConfigMaster.portRange,
             enableTLS=enableTLS,
             certFile=certFile,
-            keyFile=keyFile)
+            keyFile=keyFile,
+            domainName=domainName)
 
         self.loggerManager = LoggerManager(basicComponent=self.basicComponent)
         self.containerManager = ContainerManager(
@@ -324,6 +326,13 @@ def parseArg():
         default='',
         type=str,
         help='Key file')
+    parser.add_argument(
+        '--domainName',
+        metavar='domainName',
+        nargs='?',
+        default='fogbus2',
+        type=str,
+        help='Domain Name')
 
     return parser.parse_args()
 
@@ -344,5 +353,6 @@ if __name__ == '__main__':
         logLevel=args_.verbose,
         enableTLS=args_.enableTLS,
         certFile=args_.certFile,
-        keyFile=args_.keyFile)
+        keyFile=args_.keyFile,
+        domainName=args_.domainName)
     master_.run()

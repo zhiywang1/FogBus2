@@ -14,7 +14,8 @@ class Actor(Component):
             name: str = None,
             nameLogPrinting: str = None,
             nameConsistent: str = None,
-            actorResources: ActorResources = ActorResources()):
+            actorResources: ActorResources = ActorResources(),
+            domainName: str = 'fogbus2'):
         Component.__init__(
             self,
             role=ComponentRole.ACTOR,
@@ -23,5 +24,6 @@ class Actor(Component):
             componentID=componentID,
             name=name,
             nameLogPrinting=nameLogPrinting,
-            nameConsistent=nameConsistent)
+            nameConsistent=nameConsistent,
+            domainName=domainName)
         self.actorResources = actorResources

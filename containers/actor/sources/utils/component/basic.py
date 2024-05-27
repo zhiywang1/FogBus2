@@ -25,7 +25,8 @@ class BasicComponent(Communicator, ABC):
             ignoreSocketError: bool = False,
             enableTLS: bool = False,
             certFile: str = '',
-            keyFile: str = ''):
+            keyFile: str = '',
+            domainName: str = ''):
         Communicator.__init__(
             self,
             role=role,
@@ -37,7 +38,8 @@ class BasicComponent(Communicator, ABC):
             portRange=portRange,
             enableTLS=enableTLS,
             certFile=certFile,
-            keyFile=keyFile)
+            keyFile=keyFile,
+            domainName=domainName)
         self.handleSignal()
         self.serveEvent.wait()
         self.setName(addr=self.addr)

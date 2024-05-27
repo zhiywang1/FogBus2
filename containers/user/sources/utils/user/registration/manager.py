@@ -32,7 +32,8 @@ class RegistrationManager:
         data = {
             'label': self.label,
             'applicationName': self.appName,
-            'hostID': self.basicComponent.hostID}
+            'hostID': self.basicComponent.hostID,
+            'domainName': self.basicComponent.domainName}
 
         self.basicComponent.sendMessage(
             messageType=MessageType.REGISTRATION,

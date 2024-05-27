@@ -19,12 +19,27 @@ from ...types.message import MessageType
 class BaseScheduler:
 
     def __init__(
-            self, schedulerName: str, isContainerMode: bool, *args, **kwargs):
+            self,
+            schedulerName: str,
+            isContainerMode: bool,
+            *args,
+            **kwargs):
         self.isContainerMode = isContainerMode
         self.name = schedulerName
         self._waitingCountLock = Lock()
         self._waitingCount = 0
         self.scaler: Scaler = None
+
+    @staticmethod
+    def filter_actor(
+            domainName,
+            allActors):
+        actors = []
+        for actor in allActors:
+            if actor.domainName != domainName:
+                continue
+            actors.append(actor)
+        return actors
 
     def schedule(
             self,
@@ -37,10 +52,11 @@ class BaseScheduler:
             *args,
             **kwargs) -> bool:
         allActors = registeredManager.actors.copyAll()
+        allActors = self.filter_actor(allActors, user.domainName)
 
         if not len(allActors):
             basicComponent.debugLogger.warning(
-                'No %s to schedule', ComponentRole.ACTOR.value)
+                'No %s to schedule in domain %s', ComponentRole.ACTOR.value, user.domainName)
             self.scaler.warnUser(user)
             return False
 
@@ -89,7 +105,9 @@ class BaseScheduler:
         return True
 
     @abstractmethod
-    def _schedule(self, *args, **kwargs) -> Decision:
+    def _schedule(self,
+                  *args,
+                  **kwargs) -> Decision:
         raise NotImplementedError
 
     def joinWaiting(self):
@@ -110,12 +128,17 @@ class BaseScheduler:
 
     @abstractmethod
     def getBestMaster(
-            self, *args, **kwargs) -> Union[Component, None]:
+            self,
+            *args,
+            **kwargs) -> Union[Component, None]:
         raise NotImplementedError
 
     @abstractmethod
-    def prepareScaler(self, *args, **kwargs) -> Scaler:
+    def prepareScaler(self,
+                      *args,
+                      **kwargs) -> Scaler:
         raise NotImplementedError
 
-    def genUserTaskToken(self, user: User):
+    def genUserTaskToken(self,
+                         user: User):
         pass

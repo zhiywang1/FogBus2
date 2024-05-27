@@ -52,10 +52,10 @@ class TaskExecutorMonitor:
             if not len(tags):
                 continue
             if container.image.tags[0] in {
-                'master:latest',
-                'remote_logger:latest',
-                'user:latest',
-                'actor:latest'}:
+                'master:1.0',
+                'remote_logger:1.0',
+                'user:1.0',
+                'actor:1.0'}:
                 continue
             try:
                 stats = container.stats(stream=False)

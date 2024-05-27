@@ -23,7 +23,8 @@ class User(Component):
             name: str = None,
             nameLogPrinting: str = None,
             nameConsistent: str = None,
-            tokenList: List[str] = None):
+            tokenList: List[str] = None,
+            domainName: str = ''):
         Component.__init__(
             self,
             role=ComponentRole.USER,
@@ -32,7 +33,8 @@ class User(Component):
             componentID=componentID,
             name=name,
             nameLogPrinting=nameLogPrinting,
-            nameConsistent=nameConsistent)
+            nameConsistent=nameConsistent,
+            domainName=domainName)
         self.application = application
         self.taskNameList = application.taskNameList
         self.entryTaskNameList = application.entryTaskNameList

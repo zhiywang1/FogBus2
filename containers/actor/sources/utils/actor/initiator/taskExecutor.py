@@ -95,6 +95,7 @@ class TaskExecutorInitiator(BaseInitiator):
                ' --verbose %d' % self.basicComponent.debugLogger.level
         args += ' --containerName %s' % containerName
         args += ' --networkName %s' % networkName
+        args += ' --domainName %s' % self.basicComponent.domainName
         imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
 
         if self.basicComponent.tls_enabled:

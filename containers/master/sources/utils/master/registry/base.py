@@ -79,6 +79,12 @@ class Registry(ABC):
     def registerClient(self,
                        message: MessageReceived):
         source = message.source
+        data = message.data
+        if 'domainName' not in data:
+            return terminateMessage(source, 'DomainName not provided')
+        domainName = data['domainName']
+        if not domainName.startswith(self.basicComponent.domainName):
+            return terminateMessage(source, 'Invalid domain name')
         if source.role is ComponentRole.USER:
             return self.registerUser(message)
         if source.role is ComponentRole.ACTOR:
@@ -134,6 +140,7 @@ class Registry(ABC):
         data = message.data
         actorID = self.idManager.actor.next()
         actorResources = ActorResources.fromDict(data['actorResources'])
+        domainName = data['domainName']
 
         name, nameLogPrinting, nameConsistent = self.nameFactory.nameActor(
             source, actorID)
@@ -145,7 +152,8 @@ class Registry(ABC):
             addr=source.addr,
             componentID=actorID,
             hostID=source.hostID,
-            actorResources=actorResources)
+            actorResources=actorResources,
+            domainName=domainName)
         self.registeredManager.actors[actor] = actor
         self.profiler.updateActorResources(actor)
         data = {
@@ -179,6 +187,7 @@ class Registry(ABC):
         applicationCopy: Application = application.copy(withLabel=label)
         name, nameLogPrinting, nameConsistent = self.nameFactory.nameUser(
             source, userID, applicationCopy)
+        domainName = data['domainName']
         user = User(
             name=name,
             nameLogPrinting=nameLogPrinting,
@@ -186,7 +195,8 @@ class Registry(ABC):
             addr=source.addr,
             componentID=userID,
             hostID=source.hostID,
-            application=applicationCopy)
+            application=applicationCopy,
+            domainName=domainName)
         self.registeredManager.users[user] = user
         try:
             schedulingSuccess = self.scheduler.schedule(

@@ -11,7 +11,9 @@ class ComponentIdentity:
             componentID: str = None,
             name: str = None,
             nameLogPrinting: str = None,
-            nameConsistent: str = None):
+            nameConsistent: str = None,
+            domainName: str = ''):
+        self.domainName = domainName
         self.role = role
         self.addr = addr
         if componentID is None:
