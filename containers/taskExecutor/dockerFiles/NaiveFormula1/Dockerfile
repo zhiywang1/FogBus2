@@ -49,6 +49,8 @@ RUN python -m pip install --retries 100 --default-timeout=600  \
     --prefix=/install \
     --no-cache-dir \
     -r /install/requirements.txt
+RUN apk add --no-cache \
+    gfortran openblas-dev
 
 RUN curl -L "https://github.com/scikit-learn/scikit-learn/archive/refs/tags/1.0.2.tar.gz" -o scikit-learn-1.0.2.tar.gz \
     && tar -xzf scikit-learn-1.0.2.tar.gz \

@@ -3,8 +3,7 @@ version: '3'
 services:
 
   fogbus2-master:
-    # image: fogbus2-master
-    image: cloudslab/fogbus2-master
+    image: cloudslab/fogbus2-master:0.1
     build:
       context: ./
       dockerfile: ./Dockerfile
