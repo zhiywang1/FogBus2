@@ -22,3 +22,7 @@ docker trust key load key.pem --name jeff
 
 docker trust sign cloudslab/fogbus2-ocr:1.0
 
+
+docker scout quickview cloudslab/fogbus2-remote_logger:1.0
+docker scout cves cloudslab/fogbus2-remote_logger:1.0\n\n
+docker scout recommendations cloudslab/fogbus2-remote_logger:1.0

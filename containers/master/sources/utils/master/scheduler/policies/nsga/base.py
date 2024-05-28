@@ -50,6 +50,7 @@ class BaseNSGA(BaseScheduler):
             isContainerMode: bool):
         BaseScheduler.__init__(
             self, schedulerName=schedulerName, isContainerMode=isContainerMode)
+        self.scaler = NSGAScaler
         self.knownMasters = knownMasters
         self.minimumActors = minimumActors
         self.basicComponent = basicComponent

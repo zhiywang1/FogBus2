@@ -224,14 +224,14 @@ def parseArg():
         nargs='?',
         default='',
         type=str,
-        help='Cert file')
+        help='Cert file: openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com" ')
     parser.add_argument(
         '--keyFile',
         metavar='keyFile',
         nargs='?',
         default='',
         type=str,
-        help='Key file')
+        help='Key file: openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"')
     parser.add_argument(
         '--domainName',
         metavar='domainName',

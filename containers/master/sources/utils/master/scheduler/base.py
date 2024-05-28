@@ -51,13 +51,22 @@ class BaseScheduler:
             decisionsQueue: Queue[Decision],
             *args,
             **kwargs) -> bool:
-        allActors = registeredManager.actors.copyAll()
-        allActors = self.filter_actor(allActors, user.domainName)
+        allActors = registeredManager.actors.filter_by_domain(user.domainName)
 
         if not len(allActors):
             basicComponent.debugLogger.warning(
                 'No %s to schedule in domain %s', ComponentRole.ACTOR.value, user.domainName)
-            self.scaler.warnUser(user)
+            basicComponent.sendMessage(
+                messageType=MessageType.ACKNOWLEDGEMENT,
+                messageSubType=MessageSubType.NO_ACTOR,
+                data={'domainName': user.domainName},
+                destination=user)
+            basicComponent.debugLogger.debug(
+                'Warn %s there is no %s: %s in %s',
+                ComponentRole.USER.value,
+                ComponentRole.ACTOR.value,
+                user.nameLogPrinting,
+                user.domainName)
             return False
 
         if resources.cpu.utilization > .8:

@@ -44,7 +44,17 @@ class NSGAScaler(Scaler):
                 continue
             filteredActors.append(actor)
         if len(filteredActors) == 0:
-            self.warnUser(user)
+            self.basicComponent.sendMessage(
+                messageType=MessageType.ACKNOWLEDGEMENT,
+                messageSubType=MessageSubType.NO_ACTOR,
+                data={'domainName': user.domainName},
+                destination=user)
+            self.basicComponent.debugLogger.debug(
+                'Warn %s there is no %s: %s in %s',
+                ComponentRole.USER.value,
+                ComponentRole.ACTOR.value,
+                user.nameLogPrinting,
+                user.domainName)
             self.basicComponent.debugLogger.debug(
                 'No available %s to scale', ComponentRole.ACTOR.value)
             return None

@@ -23,6 +23,12 @@ class Registered:
     def copyAll(self) -> List:
         return list(self.allItems)
 
+    def filter_by_domain(self, domainName: str) -> List:
+        self.lock.acquire()
+        ret = [x for x in self.allItems if x.domainName == domainName]
+        self.lock.release()
+        return ret
+
     def __len__(self):
         return self._len()
 

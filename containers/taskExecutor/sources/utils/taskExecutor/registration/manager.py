@@ -59,7 +59,8 @@ class RegistrationManager:
             'userID': userID,
             'actorID': self.actorID,
             'taskName': taskName,
-            'taskToken': taskToken}
+            'taskToken': taskToken,
+            'domainName': self.basicComponent.domainName}
         self.basicComponent.sendMessage(
             messageType=MessageType.REGISTRATION,
             messageSubType=MessageSubType.REGISTER,

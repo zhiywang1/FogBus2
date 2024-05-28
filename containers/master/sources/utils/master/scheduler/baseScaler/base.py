@@ -31,14 +31,3 @@ class Scaler:
             data=data,
             destination=user)
 
-    def warnUser(self, user: User):
-        self.basicComponent.sendMessage(
-            messageType=MessageType.ACKNOWLEDGEMENT,
-            messageSubType=MessageSubType.NO_ACTOR,
-            data={},
-            destination=user)
-        self.basicComponent.debugLogger.debug(
-            'Warn %s there is no %s: %s',
-            ComponentRole.USER.value,
-            ComponentRole.ACTOR.value,
-            user.nameLogPrinting)

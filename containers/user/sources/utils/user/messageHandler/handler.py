@@ -66,6 +66,12 @@ class UserMessageHandler:
             self.handleStop(message=message)
 
     def handleStop(self, message: MessageReceived):
+        reason = message.data['reason']
+
+        if reason != 'No Reason':
+            self.basicComponent.debugLogger.error(reason)
+            terminate()
+
         data = message.data
         durationTime = time() * 1000 - self.actuator.startTime
         hours, remainder = divmod(durationTime / 1000, 3600)
@@ -157,10 +163,11 @@ class UserMessageHandler:
 
     def handleNoActor(self, message: MessageReceived):
         self.basicComponent.debugLogger.warning(
-            'There is no %s at %s, would you like to discover available %s? '
+            'There is no %s at %s in domain %s, would you like to discover available %s? '
             'Otherwise exit. (y/N): ',
             ComponentRole.ACTOR.value,
             message.source.nameLogPrinting,
+            self.basicComponent.domainName,
             ComponentRole.MASTER.value)
         userInput = input()
         if userInput not in {'y', 'Y', 'yes', 'Yes'}:
