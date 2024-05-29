@@ -1,8 +1,11 @@
+#/bin/bash
+
 build() {
   cd $1
-  docker-compose \
+  docker compose \
     build
-  cd ..}
+  cd ..
+}
 for d in */; do
   echo "[*] Building $d ..."
   build $d

@@ -1,5 +1,0 @@
-numpy
-psutil
-python-dotenv
-six
-docker

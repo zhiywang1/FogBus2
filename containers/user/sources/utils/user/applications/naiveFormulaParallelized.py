@@ -8,15 +8,9 @@ class NaiveFormulaParallelized(ApplicationUserSide):
 
     def __init__(
             self,
-            videoPath: str,
-            targetHeight: int,
-            showWindow: bool,
             basicComponent: BasicComponent):
         super().__init__(
             appName='NaiveFormulaParallelized',
-            videoPath=videoPath,
-            targetHeight=targetHeight,
-            showWindow=showWindow,
             basicComponent=basicComponent)
 
     def prepare(self):

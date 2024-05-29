@@ -15,7 +15,6 @@ from utils import ResourcesDiscovery
 from utils.user import initActuator
 from utils.user import RegistrationManager
 from utils.user import UserMessageHandler
-from utils.user import WindowManager
 
 
 class User:
@@ -26,12 +25,7 @@ class User:
             masterAddr: Address,
             remoteLoggerAddr: Address,
             appName: str,
-            showWindow: bool,
-            label: str,
-            videoPath: str,
-            golInitText: str,
             containerName: str = '',
-            csvPath: str = '',
             logLevel=DEBUG,
             enableTLS: bool = False,
             certFile: str = '',
@@ -57,16 +51,10 @@ class User:
             containerName=containerName)
         self.registrationManager = RegistrationManager(
             basicComponent=self.basicComponent,
-            appName=appName,
-            label=label)
+            appName=appName)
         self.actuator = initActuator(
             appName=appName,
-            label=self.registrationManager.label,
-            videoPath=videoPath,
-            showWindow=showWindow,
-            basicComponent=self.basicComponent,
-            golInitText=golInitText,
-            csvPath=csvPath)
+            basicComponent=self.basicComponent)
         if self.actuator is None:
             self.basicComponent.debugLogger.error(
                 'Application is not supported: %s',
@@ -99,15 +87,6 @@ class User:
 
     def run(self):
         self.register()
-        if not self.actuator.showWindow:
-            return
-        windowManager = WindowManager(
-            basicComponent=self.basicComponent,
-            frameQueue=self.actuator.windowFrameQueue,
-            prepareWindows=self.actuator.prepare,
-            pressSpaceToStart=self.actuator.pressSpaceToStart,
-            canStart=self.actuator.canStart)
-        windowManager.run()
 
     def register(self):
         self.registrationManager.registerAt(self.basicComponent.master.addr)
@@ -172,12 +151,6 @@ def parseArg():
         metavar='ApplicationName',
         type=str,
         help='Application Name')
-    parser.add_argument(
-        '--applicationLabel',
-        metavar='ApplicationLabel',
-        default=480,
-        type=int,
-        help='e.g. 480 or 720')
 
     parser.add_argument(
         '--containerName',
@@ -187,39 +160,12 @@ def parseArg():
         type=str,
         help='container name')
     parser.add_argument(
-        '--videoPath',
-        metavar='VideoPath',
-        nargs='?',
-        default=0,
-        type=str,
-        help='/path/to/video.mp4')
-    parser.add_argument(
-        '--showWindow',
-        metavar='ShowWindow',
-        default=True,
-        action=argparse.BooleanOptionalAction,
-        help='Show window or not')
-    parser.add_argument(
         '--verbose',
         metavar='Verbose',
         nargs='?',
         default=10,
         type=int,
         help='Reference python logging level, from 0 to 50 integer to show log')
-    parser.add_argument(
-        '--golInitText',
-        metavar='GameOfLifeInitialWorldText',
-        nargs='?',
-        default='Qifan Deng',
-        type=str,
-        help='GameOfLife initial world text')
-    parser.add_argument(
-        '--csvPath',
-        metavar='CSVPath',
-        nargs='?',
-        default='',
-        type=str,
-        help='path to csv file of diabetes prediction')
     parser.add_argument(
         '--enableTLS',
         metavar='EnableTLS',
@@ -233,14 +179,21 @@ def parseArg():
         nargs='?',
         default='',
         type=str,
-        help='Cert file: openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com" ')
+        help='Cert file: '
+             'openssl req -new -x509 -days 365 -nodes '
+             '-out server.crt -keyout server.key '
+             '-subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com" ')
     parser.add_argument(
         '--keyFile',
         metavar='keyFile',
         nargs='?',
         default='',
         type=str,
-        help='Key file: openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"')
+        help='Key file: '
+             ''
+             'openssl req -new -x509 -days 365 -nodes '
+             '-out server.crt -keyout server.key '
+             '-subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com" ')
     parser.add_argument(
         '--domainName',
         metavar='domainName',
@@ -260,12 +213,7 @@ if __name__ == "__main__":
         masterAddr=(args.masterIP, args.masterPort),
         remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         appName=args.applicationName,
-        label=args.applicationLabel,
-        showWindow=args.showWindow,
-        videoPath=args.videoPath,
-        golInitText=args.golInitText,
         logLevel=args.verbose,
-        csvPath=args.csvPath,
         enableTLS=args.enableTLS,
         certFile=args.certFile,
         keyFile=args.keyFile,
