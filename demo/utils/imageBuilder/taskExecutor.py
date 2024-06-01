@@ -3,6 +3,7 @@ import os
 from .camelToSnake import camelToSnake
 from .base import crossCompileBase
 
+
 class TaskExecutorImageBuilder:
 
     def __init__(self):
@@ -20,8 +21,14 @@ class TaskExecutorImageBuilder:
             platforms: str = '',
             dockerHubUsername: str = '',
             push: bool = False) -> int:
-
-        for folder in os.listdir(self.dockerFilesFolder):
+        # get the parentfolder name
+        parentFolder = os.path.abspath(os.path.join(self.dockerFilesFolder, '..'))
+        more_folder = []
+        for folder in os.listdir(parentFolder):
+            if folder not in {'dockerFiles', 'sources'}:
+                more_folder.append(folder)
+        more_folder += os.listdir(self.dockerFilesFolder)
+        for folder in more_folder:
             folderAbsPath = os.path.join(self.dockerFilesFolder, folder)
             composeFilepath = os.path.join(folderAbsPath, 'docker-compose.yml')
             if not os.path.exists(composeFilepath):
@@ -39,10 +46,10 @@ class TaskExecutorImageBuilder:
                     push=push)
             else:
                 command = 'cd %s && docker-compose build' % folderAbsPath
-                
+
                 if proxy is not None:
                     command += ' --build-arg http_proxy=%s' % proxy + \
-                            ' --build-arg https_proxy=%s' % proxy
+                               ' --build-arg https_proxy=%s' % proxy
                 ret = os.system(
                     'cd %s && docker-compose build' % folderAbsPath)
             # delete sources folder

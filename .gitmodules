@@ -1,3 +1,6 @@
 [submodule "containers/SIEM/sources/static/sub-components/clair"]
 	path = containers/SIEM/sources/static/sub-components/clair
 	url = https://github.com/quay/clair.git
+[submodule "containers/taskExecutor/road_side_camera/sources/utils/taskExecutor/tasks/object_detection_utils/yolov10"]
+	path = containers/taskExecutor/road_side_camera/sources/utils/taskExecutor/tasks/object_detection_utils/yolov10
+	url = https://github.com/pancak3/yolov10.git

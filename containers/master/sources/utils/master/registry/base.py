@@ -176,12 +176,15 @@ class Registry(ABC):
             self,
             message: MessageReceived,
             attributeName='registeredUser'):
+        self.debugLogger.info(message)
         source = message.source
         data = message.data
         userID = self.idManager.user.next()
         applicationName = data['applicationName']
         label = data['label']
         if applicationName not in self.applicationManager.applications:
+            self.debugLogger.info(self.applicationManager.applications)
+            self.debugLogger.warning(f'Application name not valid:{applicationName}')
             return None
         application = self.applicationManager.applications[applicationName]
         applicationCopy: Application = application.copy(withLabel=label)

@@ -17,6 +17,7 @@ class SequenceMedian:
         else:
             self.index = len(sequence)
             self.sequence = sequence
+        self._updated = False
 
     def update(self, value):
         self.__lock.acquire()
@@ -24,13 +25,18 @@ class SequenceMedian:
         self.index += 1
         if self.index >= self.maxRecordNumber:
             self.index = 0
+        self._updated=True
         self.__lock.release()
 
     def median(self):
+        index = self.index
         if self.index == 0:
-            return 0
+            if self._updated:
+                index = -1
+            else:
+                return self.sequence[0]
         # there is more efficient algorithm to find the median
-        sequence = self.sequence[:self.index]
+        sequence = self.sequence[:index]
         sortedSequence = sorted(sequence)
         return sortedSequence[len(sortedSequence) >> 1]
 

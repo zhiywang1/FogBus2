@@ -1,0 +1,29 @@
+services:
+
+  fogbus2-user_gui:
+    image: cloudslab/fogbus2-user_gui:1.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./sources:/workplace
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
+    privileged: true
+    restart: unless-stopped
+    networks:
+      - fogbus2
+      - host_network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8080:8080"
+      - "8765:8765"
+networks:
+  fogbus2:
+    external: true
+  host_network:
+    external: true
