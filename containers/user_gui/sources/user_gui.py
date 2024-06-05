@@ -30,7 +30,8 @@ class User:
             enableTLS: bool = False,
             certFile: str = '',
             keyFile: str = '',
-            domainName: str = ''):
+            domainName: str = '',
+            mapReduce=False):
         self.containerName = containerName
         self.basicComponent = BasicComponent(
             role=ComponentRole.USER,
@@ -62,6 +63,7 @@ class User:
             os._exit(0)
 
         self.messageHandler = UserMessageHandler(
+            mapReduce=mapReduce,
             resourcesDiscovery=self.resourcesDiscovery,
             containerManager=self.containerManager,
             basicComponent=self.basicComponent,
@@ -201,6 +203,13 @@ def parseArg():
         default='fogbus2',
         type=str,
         help='Domain Name')
+    parser.add_argument(
+        '--mapReduce',
+        metavar='MapReduce',
+        nargs='?',
+        default=False,
+        type=bool,
+        help='enable mapreduce or not')
 
     return parser.parse_args()
 
@@ -217,5 +226,6 @@ if __name__ == "__main__":
         enableTLS=args.enableTLS,
         certFile=args.certFile,
         keyFile=args.keyFile,
-        domainName=args.domainName)
+        domainName=args.domainName,
+        mapReduce=args.mapReduce)
     user_.run()

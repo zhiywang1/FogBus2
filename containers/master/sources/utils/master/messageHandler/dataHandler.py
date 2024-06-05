@@ -17,7 +17,8 @@ class DataHandler:
         self.basicComponent = basicComponent
         self.registry = registry
 
-    def handleSensoryData(self, message: MessageReceived) -> HandlerReturn:
+    def handleSensoryData(self,
+                          message: MessageReceived) -> HandlerReturn:
         data = message.data
         userID = data['userID']
         if userID not in self.registry.registeredManager.users:
@@ -26,15 +27,29 @@ class DataHandler:
         user: User = self.registry.registeredManager.users[userID]
         data['intermediateData'] = data['sensoryData']
         del data['sensoryData']
-        for taskName in user.application.entryTaskNameList:
+        if 'mapReduce' in data:
+            max_index = len(user.application.entryTaskNameList) - 1
+            index = user.application.sendDataToIndex
+            taskName = user.application.entryTaskNameList[index]
+            index = (index + 1) % max_index
+            user.application.sendDataToIndex = index
             taskExecutor = user.taskNameToExecutor[taskName]
             self.basicComponent.sendMessage(
                 messageType=MessageType.DATA,
                 messageSubType=MessageSubType.INTERMEDIATE_DATA,
                 data=data,
                 destination=taskExecutor)
+        else:
+            for taskName in user.application.entryTaskNameList:
+                taskExecutor = user.taskNameToExecutor[taskName]
+                self.basicComponent.sendMessage(
+                    messageType=MessageType.DATA,
+                    messageSubType=MessageSubType.INTERMEDIATE_DATA,
+                    data=data,
+                    destination=taskExecutor)
 
-    def handleResult(self, message: MessageReceived) -> HandlerReturn:
+    def handleResult(self,
+                     message: MessageReceived) -> HandlerReturn:
         source = message.source
         data = message.data
         componentID = source.componentID

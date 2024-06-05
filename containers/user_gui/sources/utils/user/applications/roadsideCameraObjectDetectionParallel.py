@@ -1,3 +1,4 @@
+import json
 import os
 import re
 import base64
@@ -18,7 +19,7 @@ class WebServer:
     def __init__(self,
                  host='0.0.0.0',
                  port=8080,
-                 root_path='html'):
+                 root_path='htmlParallel'):
         self.host = host
         self.port = port
         script_path = os.path.dirname(os.path.realpath(__file__))
@@ -77,13 +78,11 @@ class WSServer:
             await websocket.close()
             return
         self.connected = True
-        frame_count = 0
         result_thread = Thread(target=self.run_result_handler, args=(websocket,))
         result_thread.daemon = True
         result_thread.start()
         async for message in websocket:
-            self.convert_image(message, frame_count)
-            frame_count += 1
+            self.convert_image(message)
 
     async def start_websocket_server(self):
         print(f"WebSocket server is running on ws://{self.host}:{self.port}")
@@ -91,14 +90,12 @@ class WSServer:
             await asyncio.Future()
 
     def convert_image(self,
-                      data_url,
-                      frame_count):
-        # Extract base64 data from the dataURL
+                      data_str):
+        data = json.loads(data_str)
+        data_url = data['dataURL']
+        frame_count = data['frameCount']
         base64_data = re.sub('^data:image/jpeg;base64,', '', data_url)
-
-        # Decode the base64 data
         image_data = base64.b64decode(base64_data)
-        # Convert the image data to a Pillow image
         image = Image.open(io.BytesIO(image_data))
 
         input_data = {
@@ -112,13 +109,13 @@ class WSServer:
         self.last_data_sent_time[frame_count] = time()
 
 
-class RoadsideCameraObjectDetection(ApplicationUserSide):
+class RoadsideCameraObjectDetectionParallel(ApplicationUserSide):
 
     def __init__(
             self,
             basicComponent: BasicComponent):
         super().__init__(
-            appName='RoadsideCameraObjectDetection',
+            appName='RoadsideCameraObjectDetectionParallel',
             basicComponent=basicComponent)
 
         self.web_server = WebServer()

@@ -20,12 +20,13 @@ from ...types import MessageType
 class UserMessageHandler:
     def __init__(
             self,
+            mapReduce: bool,
             resourcesDiscovery: ResourcesDiscovery,
             containerManager: ContainerManager,
             basicComponent: BasicComponent,
             actuator: ApplicationUserSide,
             registrationManager: RegistrationManager):
-
+        self.mapReduce = mapReduce
         self.resourcesDiscovery = resourcesDiscovery
         self.registrationManager = registrationManager
         self.actuator = actuator
@@ -35,7 +36,8 @@ class UserMessageHandler:
         self.lastDataSentTime = 0
         self.registerTime = 0
 
-    def handleMessage(self, message: MessageReceived):
+    def handleMessage(self,
+                      message: MessageReceived):
         if message.typeIs(
                 messageType=MessageType.REGISTRATION,
                 messageSubType=MessageSubType.REGISTERED):
@@ -65,7 +67,8 @@ class UserMessageHandler:
                 messageSubType=MessageSubType.STOP):
             self.handleStop(message=message)
 
-    def handleStop(self, message: MessageReceived):
+    def handleStop(self,
+                   message: MessageReceived):
         reason = message.data['reason']
 
         if reason != 'No Reason':
@@ -91,7 +94,8 @@ class UserMessageHandler:
         self.basicComponent.debugLogger.debug('Bye')
         terminate()
 
-    def handleRegistered(self, message: MessageReceived):
+    def handleRegistered(self,
+                         message: MessageReceived):
         source = message.source
         self.basicComponent.master = source
         data = message.data
@@ -136,17 +140,20 @@ class UserMessageHandler:
         # os._exit(0)
         Thread(target=self.ready, name='Actuator').start()
 
-    def handleResult(self, message: MessageReceived):
+    def handleResult(self,
+                     message: MessageReceived):
 
         result = message.data['finalResult']
         self.actuator.resultForActuator.put(result)
         # self.saveResponseTime()
 
-    def handleActorsCount(self, message: MessageReceived):
+    def handleActorsCount(self,
+                          message: MessageReceived):
         data = message.data
         self.registrationManager.actorsCount = data['actorsCount']
 
-    def handleForward(self, message: MessageReceived):
+    def handleForward(self,
+                      message: MessageReceived):
         data = message.data
         addr = data['masterAddr']
         masterAddr = (addr[0], addr[1])
@@ -161,7 +168,8 @@ class UserMessageHandler:
             'Found %s at %s', ComponentRole.MASTER.value, str(masterAddr))
         self.registrationManager.registerAt(masterAddr)
 
-    def handleNoActor(self, message: MessageReceived):
+    def handleNoActor(self,
+                      message: MessageReceived):
         self.basicComponent.debugLogger.warning(
             'There is no %s at %s in domain %s, would you like to discover available %s? '
             'Otherwise exit. (y/N): ',
@@ -185,6 +193,8 @@ class UserMessageHandler:
             data = {
                 'userID': self.basicComponent.componentID,
                 'sensoryData': self.actuator.dataToSubmit.get()}
+            if self.mapReduce:
+                data['mapReduce'] = True
             self.basicComponent.sendMessage(
                 messageType=MessageType.DATA,
                 messageSubType=MessageSubType.SENSORY_DATA,
