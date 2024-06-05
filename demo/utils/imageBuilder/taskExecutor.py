@@ -23,13 +23,17 @@ class TaskExecutorImageBuilder:
             push: bool = False) -> int:
         # get the parentfolder name
         parentFolder = os.path.abspath(os.path.join(self.dockerFilesFolder, '..'))
-        more_folder = []
+        old_folders = os.listdir(self.dockerFilesFolder)
+        all_folders = []
+        for folder in old_folders:
+            all_folders.append(os.path.join(self.dockerFilesFolder, folder))
+
+        new_folders = []
         for folder in os.listdir(parentFolder):
             if folder not in {'dockerFiles', 'sources'}:
-                more_folder.append(folder)
-        more_folder += os.listdir(self.dockerFilesFolder)
-        for folder in more_folder:
-            folderAbsPath = os.path.join(self.dockerFilesFolder, folder)
+                new_folders.append(os.path.join(parentFolder, folder))
+
+        for folderAbsPath in old_folders + new_folders:
             composeFilepath = os.path.join(folderAbsPath, 'docker-compose.yml')
             if not os.path.exists(composeFilepath):
                 continue
