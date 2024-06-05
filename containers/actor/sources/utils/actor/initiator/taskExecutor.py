@@ -105,7 +105,6 @@ class TaskExecutorInitiator(BaseInitiator):
             args += ' --enableTLS True'
             args += ' --certFile server.crt'
             args += ' --keyFile  server.key'
-
         self.initTaskExecutorInContainer(
             imageName=imageName,
             containerName=containerName,

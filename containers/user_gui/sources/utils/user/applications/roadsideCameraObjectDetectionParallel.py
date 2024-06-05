@@ -65,7 +65,11 @@ class WSServer:
                                websocket):
         while True:
             frame, frame_count = self.frame_out.get()
-            await websocket.send(frame)
+            data = {
+                'frameCount': frame_count,
+                'imageSrc': frame
+            }
+            await websocket.send(json.dumps(data))
 
     def run_ws_server(self):
         asyncio.run(self.start_websocket_server())

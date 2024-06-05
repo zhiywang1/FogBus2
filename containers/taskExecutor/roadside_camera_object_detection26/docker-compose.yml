@@ -1,0 +1,13 @@
+services:
+
+  fogbus2-roadside_camera_object_detection:
+    image: cloudslab/fogbus2-roadside_camera_object_detection26:1.0
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
+    ports:
+      - 10000:10000

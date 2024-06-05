@@ -25,13 +25,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mv /yolov10 /workplace
 
 WORKDIR /workplace
-RUN apt install -y wget
-RUN wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10s.pt
-
+RUN date
 COPY ./sources /workplace
 RUN pip install --no-cache-dir -r requirements.txt
 RUN apt clean && apt autoremove && apt autoclean
 
+RUN apt install -y wget
+RUN wget https://github.com/THU-MIG/yolov10/releases/download/v1.1/yolov10s.pt \
+        -O /workplace/utils/taskExecutor/tasks/yolov10s.pt
 # Hostname
 RUN echo "RoadsideCameraObjectDetection" > /etc/hostname
 RUN openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key \

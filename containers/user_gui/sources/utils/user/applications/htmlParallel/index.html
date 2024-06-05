@@ -94,8 +94,7 @@
     let websocket;
     let sendFrameInterval;
     let currentStream = null;
-    let sentTime;
-    let responseTimes = [];
+    let sentTimes = {};
     let sendFrames;
     let sentFrameCount = 0;
     let receivedFrameCount = 0;
@@ -104,6 +103,7 @@
     let waitingFrameCount = 0;
     const update_interval = 1000;
     const maxHeight = 360;
+    let last_frame_count = 0;
 
     async function initCamera() {
         try {
@@ -165,34 +165,22 @@
         };
 
         const showFrame = function (data) {
-            frameCount = data.frameCount;
-
-            if (frameCount === shownFrameCount) {
-                shownFrameCount++;
+            const data_frameCount = data['frameCount'];
+            const imageSrc = data['imageSrc'];
+            if (data_frameCount >= shownFrameCount) {
                 const receivedFrame = document.getElementById('received-frame');
-                receivedFrame.src = data.src;
-                updateRightQuality(data.src);
+                receivedFrame.src = imageSrc;
+                updateRightQuality(imageSrc);
                 const now = performance.now();
-                const responseTime = now - sentTime;
-                responseTimes.push(responseTime);
-                if (responseTimes.length > 10) {
-                    responseTimes.shift();
-                }
-                const averageResponseTime = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
-                if (now - lastFrameTime > update_interval) {
-                    document.getElementById('response-time').innerText = averageResponseTime.toFixed(2);
-                }
-                if (shownFrameCount in holdFrames) {
-                    showFrame(holdFrames[shownFrameCount]);
-                    delete holdFrames[shownFrameCount];
-                }
-            } else {
-                holdFrames[frameCount] = data;
+                const responseTime = now - sentTimes[data_frameCount];
+                delete sentTimes[data_frameCount];
+                document.getElementById('response-time').innerText = responseTime.toFixed(2);
+                shownFrameCount = data_frameCount + 1;
             }
         }
         websocket.onmessage = (event) => {
             receivedFrameCount++;
-            waitingFrameCount = sentFrameCount - receivedFrameCount;
+            waitingFrameCount = sentFrameCount - shownFrameCount;
             showFrame(JSON.parse(event.data));
         };
 
@@ -205,15 +193,16 @@
             clearInterval(sendFrameInterval);
         };
 
+
         function updateStats() {
             const now = performance.now();
             const elapsedTime = now - lastFrameTime;
             if (elapsedTime >= update_interval) {
-                const fps = frameCount / (elapsedTime / 1000);
+                const fps = (frameCount - last_frame_count) / (elapsedTime / 1000);
                 const receivedFps = receivedFrameCount / (elapsedTime / 1000);
                 document.getElementById('left-fps').innerText = fps.toFixed(2); // Update left FPS
                 document.getElementById('right-fps').innerText = receivedFps.toFixed(2); // Update right FPS
-                frameCount = 0;
+                last_frame_count = frameCount;
                 receivedFrameCount = 0;
                 lastFrameTime = now;
             }
@@ -231,7 +220,7 @@
 
         sendFrames = function () {
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            if (websocket.readyState === WebSocket.OPEN && waitingFrameCount < 30) {
+            if (websocket.readyState === WebSocket.OPEN && waitingFrameCount < 10) {
                 const dataURL = canvas.toDataURL('image/jpeg');
                 const bytes = new TextEncoder().encode(dataURL).length;
                 totalBytesSent += bytes;
@@ -239,10 +228,10 @@
                     'dataURL': dataURL,
                     'frameCount': sentFrameCount
                 }
-                websocket.send(data.toString());
+                websocket.send(JSON.stringify(data));
                 sentFrameCount++;
-                waitingFrameCount = sentFrameCount - receivedFrameCount;
-                sentTime = performance.now();
+                waitingFrameCount = sentFrameCount - shownFrameCount;
+                sentTimes[frameCount] = performance.now();
                 frameCount++;
                 updateLeftQuality(canvas, bytes);
             }

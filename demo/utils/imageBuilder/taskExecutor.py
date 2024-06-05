@@ -57,7 +57,8 @@ class TaskExecutorImageBuilder:
                 ret = os.system(
                     'cd %s && docker-compose build' % folderAbsPath)
             # delete sources folder
-            os.system('rm -rf %s/sources' % folderAbsPath)
+            if folderAbsPath not in new_folders:
+                os.system('rm -rf %s/sources' % folderAbsPath)
 
             if ret != 0:
                 raise Exception('Failed to build: %s' % composeFilepath)

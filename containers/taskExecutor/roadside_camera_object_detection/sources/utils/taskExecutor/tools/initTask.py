@@ -5,7 +5,7 @@ from ..tasks import *
 
 def initTask(taskName: str) -> Union[BaseTask, None]:
     task = None
-    if taskName == 'RoadsideCameraObjectDetection':
+    if taskName.startswith('RoadsideCameraObjectDetection'):
         task = ObjectDetection()
 
     return task
