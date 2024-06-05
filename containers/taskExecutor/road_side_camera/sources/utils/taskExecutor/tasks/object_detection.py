@@ -21,14 +21,10 @@ class ObjectDetection(BaseTask):
     def np_arr_to_base64(
             np_arr):
         buffered = BytesIO()
-        # Convert numpy array to PIL Image
+        np_arr = np_arr[:, :, ::-1]
         img = Image.fromarray(np_arr)
-        # Create a BytesIO object
-        # Save image to BytesIO object
         img.save(buffered, format="JPEG")
-        # Get image data
         img_str = buffered.getvalue()
-        # Encode image data to base64
         img_str_base64 = base64.b64encode(img_str)
         return img_str_base64
 
