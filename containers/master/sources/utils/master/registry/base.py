@@ -23,7 +23,6 @@ from ..application.manager import ApplicationManager
 from ..logger.allSystemPerformance import AllSystemPerformance
 from ..messageHandler.tools.terminateMessage import terminateMessage
 from ..messageHandler.tools.waitMessage import waitMessage
-from ..networkController.networks import NetworkController
 from ..profiler.base import MasterProfiler
 from ..profiler.decisions import Decisions
 from ..scheduler.base import BaseScheduler
@@ -33,6 +32,7 @@ from ..networkController.networks import NetworkController
 from ...component import BasicComponent
 from ...connection.message.received import MessageReceived
 from ...connection.message.toSend import MessageToSend
+from .signature.base import Singer
 from ...types import Component
 from ...types import ComponentRole
 from ...types import SynchronizedAttribute
@@ -75,6 +75,7 @@ class Registry(ABC):
         self.waitTimeout = waitTimeout
 
         self.networkController = networkController
+        self.singer = Singer(self.basicComponent.key_file)
 
     def registerClient(self,
                        message: MessageReceived):
@@ -491,9 +492,14 @@ class Registry(ABC):
             'label': user.application.label,
             'userID': user.componentID,
             'childrenTaskTokens': childrenTaskTokens,
-            'networkName': networkName}
+            'networkName': networkName,
+            'actorID': actor.componentID,
+            'signedAttributes': ['taskName', 'taskToken', 'actorID', 'userID', 'childrenTaskTokens', 'networkName']}
+        from .signature.base import helper
+        signed_data = self.singer.sign_dictionary(data)
+        signed_data['taskName'] = taskNameLabeled
         self.basicComponent.sendMessage(
             messageType=MessageType.PLACEMENT,
             messageSubType=MessageSubType.RUN_TASK_EXECUTOR,
-            data=data,
+            data=signed_data,
             destination=actor)

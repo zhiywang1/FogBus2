@@ -84,7 +84,15 @@ class ContainersAPIHandler(Resource):
             "status": "success",
             "data": [{
                 "container_id": container.id,
-                "image_id": container.image.id} for container in containers]}
+                "image_id": container.image.id} for container in containers],
+            "signature_data":
+                [{
+                    'args': container.attrs['Args'],
+                    'container_id': container.id,
+                    'container_image_id': container.image.id,
+                    'labels': container.labels,
+                } for container in containers]
+        }
         return data
 
     @format_post_request

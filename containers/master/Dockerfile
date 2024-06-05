@@ -39,7 +39,8 @@ RUN python -m pip install --prefix=/install numpy==1.22.2
 RUN python -m pip install --prefix=/install scipy==1.6.3
 RUN python -m pip install --prefix=/install requests==2.26.0
 RUN python -m pip install --prefix=/install chardet==4.0.0
-
+RUN apk add libffi-dev
+RUN python -m pip install --prefix=/install cryptography==42.0.7
 
 # Copy files
 FROM base

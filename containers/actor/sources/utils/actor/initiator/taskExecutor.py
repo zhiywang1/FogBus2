@@ -1,4 +1,5 @@
 import hashlib
+import json
 from os import system
 from time import time
 from typing import List
@@ -50,7 +51,9 @@ class TaskExecutorInitiator(BaseInitiator):
             taskToken: str,
             childTaskTokens: List[str],
             isContainerMode: bool,
-            networkName: str):
+            networkName: str,
+            signedAttributes: list,
+            signature: str):
         baseTaskName, label = self.covertTaskName(taskName)
         actor = self.basicComponent.me
         master = self.basicComponent.master
@@ -104,7 +107,12 @@ class TaskExecutorInitiator(BaseInitiator):
             args += ' --keyFile  server.key'
 
         self.initTaskExecutorInContainer(
-            imageName=imageName, containerName=containerName, args=args, networkName=networkName)
+            imageName=imageName,
+            containerName=containerName,
+            args=args,
+            networkName=networkName,
+            signedAttributes=signedAttributes,
+            signature=signature)
 
     def initTaskExecutorOnHost(self,
                                args: str):
@@ -118,31 +126,32 @@ class TaskExecutorInitiator(BaseInitiator):
             args: str,
             imageName: str,
             containerName: str,
-            networkName: str):
-        try:
-            self.dockerClient.containers.run(
-                name=containerName,
-                detach=True,
-                auto_remove=True,
-                image=imageName,
-                network=networkName,
-                working_dir='/workplace',
-                volumes={
-                    '/var/run/docker.sock':
-                        {
-                            'bind': '/var/run/docker.sock',
-                            'mode': 'rw'}},
-                command=args)
-            self.basicComponent.debugLogger.debug(
-                'Init TaskExecutor in container:\n%s', args)
-        except APIError as e:
-            if 'cloudslab/' != imageName[:10]:
-                return self.initTaskExecutorInContainer(
-                    args=args,
-                    imageName='cloudslab/' + imageName,
-                    containerName=containerName,
-                    networkName=networkName)
-            self.basicComponent.debugLogger.warning(str(e))
+            networkName: str,
+            signedAttributes: list,
+            signature: str):
+        signedAttributes = json.dumps(signedAttributes)
+
+        labels = {
+            'signedAttributes': signedAttributes,
+            'signature': signature
+        }
+
+        self.dockerClient.containers.run(
+            name=containerName,
+            detach=True,
+            auto_remove=True,
+            image=imageName,
+            network=networkName,
+            working_dir='/workplace',
+            volumes={
+                '/var/run/docker.sock':
+                    {
+                        'bind': '/var/run/docker.sock',
+                        'mode': 'rw'}},
+            command=args,
+            labels=labels)
+        self.basicComponent.debugLogger.debug(
+            'Init TaskExecutor in container:\n%s', args)
 
     @staticmethod
     def serialize(childrenTaskTokens: List[str]) -> str:

@@ -121,6 +121,8 @@ class ActorMessageHandler:
         taskToken = data['taskToken']
         childTaskTokens = data['childrenTaskTokens']
         networkName = data['networkName']
+        signedAttributes = data['signedAttributes']
+        signature = data['signature']
         self.initiator.initTaskExecutor(
             userID=userID,
             userName=userName,
@@ -128,7 +130,9 @@ class ActorMessageHandler:
             taskToken=taskToken,
             childTaskTokens=childTaskTokens,
             isContainerMode=self.containerManager.isContainerMode,
-            networkName=networkName)
+            networkName=networkName,
+            signedAttributes=signedAttributes,
+            signature=signature)
 
     def canInitComponent(
             self,
