@@ -28,13 +28,8 @@ class NaiveFormulaSerialized(ApplicationUserSide):
             'Application is running: %s', self.appName)
 
         # get user input of a, b, and c
-        print('a = ', end='')
-        a = int(input())
-        print('b = ', end='')
-        b = int(input())
-        print('c = ', end='')
-        c = int(input())
-
+        from random import randint
+        a, b, c = randint(1, 100), randint(1, 100), randint(1, 100)
         inputData = {
             'a': a,
             'b': b,
