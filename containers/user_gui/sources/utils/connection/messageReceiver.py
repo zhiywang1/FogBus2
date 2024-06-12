@@ -37,7 +37,7 @@ class MessageReceiver(MessageSender):
             threadNumber: int = 8,
             cert_file: str = None,
             key_file: str = None,
-            tls_enabled: bool = True):
+            tls_enabled: bool = False):
 
         self.conns: Connections[str, Connection] = Connections()
         self.messagesReceivedQueue: Queue[

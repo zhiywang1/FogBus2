@@ -165,7 +165,7 @@ def create_socket(tls_enabled: bool,
         client_socket = context.wrap_socket(client_socket,
                                             server_hostname=dest_addr[0])
 
-        client_socket.connect(dest_addr)
+    client_socket.connect(dest_addr)
     return client_socket
 
 

@@ -309,7 +309,7 @@ def parseArg():
         '--enableTLS',
         metavar='EnableTLS',
         nargs='?',
-        default='',
+        default=False,
         type=bool,
         help='enable TLS or not')
     parser.add_argument(
