@@ -1,7 +1,7 @@
 docker swarm init --advertise-addr <MANAGER-IP>
  docker swarm leave --force
 docker swarm join --token <SWARM-JOIN-TOKEN> <MANAGER-IP>:2377
-docker network create --driver overlay --attachable my-overlay
+docker network create --driver overlay --attachable fogbus2
 docker run -d --name container1 --network my-overlay nginx
 
 
