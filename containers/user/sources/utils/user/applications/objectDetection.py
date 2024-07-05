@@ -22,8 +22,8 @@ class ObjectDetection(ApplicationUserSide):
         self.target_height = 480
         self.show_window = True if window_height is not None else False
         self.video_path = video_path
-        self.window_height = 640
-        self.window_frame_queue: Queue[Tuple[str, Any]] = Queue(1)
+        self.window_height = window_height
+        self.window_frame_queue: Queue[Tuple[str, Any]] = Queue()
 
         self.fps = 30
         self.sent_times = [0 for _ in range(self.fps)]
@@ -47,7 +47,7 @@ class ObjectDetection(ApplicationUserSide):
         self.sent_times[frame_count % self.fps] = time()
         self.frames.put((frame_count, frame))
         self.dataToSubmit.put(input_data)
-        print('Sent frame:', frame_count)
+        # print('Sent frame:', frame_count)
         return True
 
     def _frame_sender(self):
@@ -93,46 +93,59 @@ class ObjectDetection(ApplicationUserSide):
             self.draw(frame_count, objects, len(draw_times))
 
     def draw(self, frame_count, objects, fps):
-        print('Received frame:', frame_count, objects)
+        # print('Received frame:', frame_count, objects)
         while True:
             count, frame = self.frames.get()
             if count == frame_count:
                 break
             self.frames.put((count, frame))
+            sleep(.1)
+            # print(f'Frame checked: {count}, expecting: {frame_count} ')
+        if not self.show_window:
+            return
+        # resize frame to window height and keep the aspect ratio
+        width = frame.shape[1]
+        height = frame.shape[0]
+        resized_width = int(width * self.window_height / height)
+        frame = cv2.resize(frame, (resized_width, self.window_height))
+        self.put_labels(frame, objects, fps)
+        self.window_frame_queue.put(('ObjectDetection', frame))
 
-        original_shape = frame.shape
-
+    def put_labels(self, frame, objects, fps):
+        shape = frame.shape
+        base = 640
+        font_scale = 0.75 * self.window_height / base
+        thickness = round(1 * self.window_height / base + 0.45)
+        org = (10 * self.window_height / base, 50 * self.window_height / base)
         for items in objects:
             cls, label, conf, bbox = items['cls'], items['label'], items['conf'], items['bbox']
             x1, y1, x2, y2 = bbox
-            x1 = x1 * original_shape[1] / self.target_height
-            y1 = y1 * original_shape[0] / self.target_height
-            x2 = x2 * original_shape[1] / self.target_height
-            y2 = y2 * original_shape[0] / self.target_height
+            x1 = x1 * shape[1] / self.target_height
+            y1 = y1 * shape[0] / self.target_height
+            x2 = x2 * shape[1] / self.target_height
+            y2 = y2 * shape[0] / self.target_height
             # add label and confidence value
             cv2.putText(
                 frame,
                 f'{label} {conf:.2f}',
                 (int(x1), int(y1)),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                2,
+                font_scale,
                 (255, 255, 255),
-                4)
+                thickness)
             # add fps
             cv2.putText(
                 frame,
                 f'FPS: {fps}',
                 (10, 50),
                 cv2.FONT_HERSHEY_SIMPLEX,
-                2,
+                font_scale,
                 (255, 255, 255),
-                4)
+                thickness)
             cv2.rectangle(
                 frame,
                 (int(x1), int(y1)), (int(x2), int(y2)),
                 (255,
                  255,
                  255),
-                4)
-
-        self.window_frame_queue.put(('ObjectDetection', frame))
+                thickness)

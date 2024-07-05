@@ -196,7 +196,7 @@ class Registry(ABC):
                 tasks_dict[task_name] = task
                 entry_tasks.append(task)
             application = Application(
-                name='ObjectDetection',
+                name=f'ObjectDetection{task_count}Tasks',
                 tasksWithDependency=tasks_dict,
                 entryTasks=entry_tasks
             )

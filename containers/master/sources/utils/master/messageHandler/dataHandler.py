@@ -27,7 +27,7 @@ class DataHandler:
         user: User = self.registry.registeredManager.users[userID]
         data['intermediateData'] = data['sensoryData']
         del data['sensoryData']
-        if user.application.name == 'ObjectDetection':
+        if user.application.name.startswith('ObjectDetection'):
             max_index = len(user.application.entryTaskNameList)
             index = user.application.sendDataToIndex
             taskName = user.application.entryTaskNameList[index]

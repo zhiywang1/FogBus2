@@ -19,5 +19,5 @@ class ObjectDetectionYoloV7(BaseTask):
             'objects': objects,
             'frame_count': input_data['frame_count']
         }
-        # print(result)
+        # print(input_data['frame_count'])
         return result

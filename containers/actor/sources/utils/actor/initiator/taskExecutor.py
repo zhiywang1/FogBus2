@@ -127,7 +127,7 @@ class TaskExecutorInitiator(BaseInitiator):
         self.basicComponent.debugLogger.info(args)
         system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
                ' && cd ../../taskExecutor/sources/'
-               f'&& python taskExecutor.py {args}')
+               f'&& python taskExecutor.py {args} &')
         self.basicComponent.debugLogger.debug(
             'Init TaskExecutor on host:\n %s', args)
 
