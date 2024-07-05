@@ -94,7 +94,8 @@ class Master:
             systemPerformance=self.loggerManager.systemPerformance,
             profiler=self.profiler,
             waitTimeout=waitTimeout,
-            networkController=self.networkController)
+            networkController=self.networkController,
+            is_container_mode=self.containerManager.isContainerMode)
         self.resourcesDiscovery = MasterResourcesDiscovery(
             registry=self.registry,
             basicComponent=self.basicComponent,

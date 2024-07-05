@@ -88,7 +88,8 @@ class ActorMessageHandler:
         name = data['name']
         nameLogPrinting = data['nameLogPrinting']
         nameConsistent = data['nameConsistent']
-        swarmJoinToken = data['swarmJoinToken']
+        if self.containerManager.isContainerMode:
+            swarmJoinToken = data['swarmJoinToken']
         self.basicComponent.setName(
             addr=self.basicComponent.addr,
             name=name,

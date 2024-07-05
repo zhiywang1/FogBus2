@@ -13,5 +13,7 @@ def initTask(taskName: str) -> Union[BaseTask, None]:
         task = NaiveFormula2()
     elif taskName == 'NaiveFormula3':
         task = NaiveFormula3()
+    elif taskName.startswith('ObjectDetectionYolov7'):
+        task = ObjectDetectionYoloV7()
 
     return task

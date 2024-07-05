@@ -3,12 +3,15 @@ from typing import Union
 from ..applications import ApplicationUserSide
 from ..applications import NaiveFormulaParallelized
 from ..applications import NaiveFormulaSerialized
+from ..applications import ObjectDetection
 from ...component.basic import BasicComponent
 
 
 def initActuator(
         appName: str,
-        basicComponent: BasicComponent
+        basicComponent: BasicComponent,
+        *args,
+        **kwargs,
 ) -> Union[ApplicationUserSide, None]:
     actuator = None
     if appName == 'NaiveFormulaSerialized':
@@ -17,4 +20,8 @@ def initActuator(
     elif appName == 'NaiveFormulaParallelized':
         actuator = NaiveFormulaParallelized(
             basicComponent=basicComponent)
+    elif appName == 'ObjectDetection':
+        actuator = ObjectDetection(
+            basicComponent=basicComponent,
+            *args, **kwargs)
     return actuator

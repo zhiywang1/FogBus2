@@ -23,7 +23,7 @@ class RegistrationManager:
         self.actorsCount = 0
         self.requestSentTime = 0
 
-    def registerAt(self, masterAddr: Address):
+    def registerAt(self, masterAddr: Address, task_count=None):
         self.basicComponent.master = Component(
             hostID='HostID',
             role=ComponentRole.MASTER,
@@ -34,6 +34,8 @@ class RegistrationManager:
             'applicationName': self.appName,
             'hostID': self.basicComponent.hostID,
             'domainName': self.basicComponent.domainName}
+        if task_count:
+            data['task_count'] = task_count
 
         self.basicComponent.sendMessage(
             messageType=MessageType.REGISTRATION,

@@ -18,7 +18,7 @@ class Application(SerializableDictionary):
         self.label = label
         self.nameWithLabel = name
         self.taskNameList: List[str] = []
-        self.sendDataToIndex:int = 0
+        self.sendDataToIndex: int = 0
         self.entryTaskNameList: List[str] = []
         self.refreshAttributes()
 

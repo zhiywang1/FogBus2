@@ -27,8 +27,8 @@ class DataHandler:
         user: User = self.registry.registeredManager.users[userID]
         data['intermediateData'] = data['sensoryData']
         del data['sensoryData']
-        if 'mapReduce' in data:
-            max_index = len(user.application.entryTaskNameList) - 1
+        if user.application.name == 'ObjectDetection':
+            max_index = len(user.application.entryTaskNameList)
             index = user.application.sendDataToIndex
             taskName = user.application.entryTaskNameList[index]
             index = (index + 1) % max_index

@@ -15,6 +15,8 @@ from utils import ResourcesDiscovery
 from utils.user import initActuator
 from utils.user import RegistrationManager
 from utils.user import UserMessageHandler
+from utils.user.window import WindowManager
+from utils.user.applications import ObjectDetection
 
 
 class User:
@@ -25,6 +27,9 @@ class User:
             masterAddr: Address,
             remoteLoggerAddr: Address,
             appName: str,
+            windowHeight: int,
+            videoPath: str,
+            task_count: int,
             containerName: str = '',
             logLevel=DEBUG,
             enableTLS: bool = False,
@@ -54,7 +59,11 @@ class User:
             appName=appName)
         self.actuator = initActuator(
             appName=appName,
-            basicComponent=self.basicComponent)
+            basicComponent=self.basicComponent,
+            window_height=windowHeight,
+            video_path=videoPath,
+            task_count=task_count
+        )
         if self.actuator is None:
             self.basicComponent.debugLogger.error(
                 'Application is not supported: %s',
@@ -89,7 +98,19 @@ class User:
         self.register()
 
     def register(self):
-        self.registrationManager.registerAt(self.basicComponent.master.addr)
+        task_count = None
+        if isinstance(self.actuator, ObjectDetection):
+            task_count = self.actuator.task_count
+        self.registrationManager.registerAt(self.basicComponent.master.addr, task_count)
+        if not isinstance(self.actuator, ObjectDetection):
+            return
+        if not self.actuator.show_window:
+            return
+        window_manager = WindowManager(
+            basicComponent=self.basicComponent,
+            frameQueue=self.actuator.window_frame_queue,
+            prepareWindows=self.actuator.prepare)
+        window_manager.run()
 
     def uploadMedianResponseTime(self):
         responseTime = self.actuator.responseTime.median()
@@ -201,6 +222,27 @@ def parseArg():
         default='fogbus2',
         type=str,
         help='Domain Name')
+    parser.add_argument(
+        '--windowHeight',
+        metavar='windowHeight',
+        nargs='?',
+        default=None,
+        type=int,
+        help='Window height')
+    parser.add_argument(
+        '--videoPath',
+        metavar='videoPath',
+        nargs='?',
+        default=None,
+        type=str,
+        help='Video path')
+    parser.add_argument(
+        '--taskCount',
+        metavar='taskCount',
+        nargs='?',
+        default=2,
+        type=int,
+        help='Task count')
 
     return parser.parse_args()
 
@@ -217,5 +259,9 @@ if __name__ == "__main__":
         enableTLS=args.enableTLS,
         certFile=args.certFile,
         keyFile=args.keyFile,
-        domainName=args.domainName)
+        domainName=args.domainName,
+        windowHeight=args.windowHeight,
+        videoPath=args.videoPath,
+        task_count=args.taskCount
+    )
     user_.run()

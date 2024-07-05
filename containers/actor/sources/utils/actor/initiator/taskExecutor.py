@@ -1,5 +1,7 @@
 import hashlib
 import json
+import sys
+import os
 from os import system
 from time import time
 from typing import List
@@ -59,8 +61,15 @@ class TaskExecutorInitiator(BaseInitiator):
         master = self.basicComponent.master
         remoteLogger = self.basicComponent.remoteLogger
         childTaskTokens = self.serialize(childTaskTokens)
+        args = ''
+        args += ' --domainName %s' % self.basicComponent.domainName
+        self.basicComponent.debugLogger.info(self.basicComponent.tls_enabled)
+        if self.basicComponent.tls_enabled:
+            args += ' --enableTLS True'
+            args += ' --certFile server.crt'
+            args += ' --keyFile  server.key'
         if not isContainerMode:
-            args = ' --bindIP %s' % actor.addr[0] + \
+            args += ' --bindIP %s' % actor.addr[0] + \
                    ' --masterIP %s' % master.addr[0] + \
                    ' --masterPort %d' % master.addr[1] + \
                    ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
@@ -98,13 +107,10 @@ class TaskExecutorInitiator(BaseInitiator):
                ' --verbose %d' % self.basicComponent.debugLogger.level
         args += ' --containerName %s' % containerName
         args += ' --networkName %s' % networkName
-        args += ' --domainName %s' % self.basicComponent.domainName
+        if baseTaskName.startswith('object_detection_yolov7'):
+            baseTaskName = 'object_detection_yolov7'
         imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
 
-        if self.basicComponent.tls_enabled:
-            args += ' --enableTLS True'
-            args += ' --certFile server.crt'
-            args += ' --keyFile  server.key'
         self.initTaskExecutorInContainer(
             imageName=imageName,
             containerName=containerName,
@@ -115,8 +121,13 @@ class TaskExecutorInitiator(BaseInitiator):
 
     def initTaskExecutorOnHost(self,
                                args: str):
-        system('cd ../../taskExecutor/sources/ &&'
-               ' python taskExecutor.py %s &' % args)
+        script_path = os.path.dirname(os.path.abspath(__file__))
+        yolo_path = os.path.abspath(os.path.join(script_path, '../../taskExecutor/sources/utils/taskExecutor/tasks'))
+        sys.path.insert(0, yolo_path)
+        self.basicComponent.debugLogger.info(args)
+        system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
+               ' && cd ../../taskExecutor/sources/'
+               f'&& python taskExecutor.py {args}')
         self.basicComponent.debugLogger.debug(
             'Init TaskExecutor on host:\n %s', args)
 

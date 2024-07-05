@@ -23,6 +23,7 @@ urllib3==1.26.6
 websocket-client==1.1.0
 docker==5.0.0
 numpy==1.22.2
-scipy==1.6.3
+scipy==1.7.1
 requests==2.26.0
 chardet==4.0.0
+cryptography==42.0.8

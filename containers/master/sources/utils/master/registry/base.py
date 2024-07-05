@@ -49,6 +49,7 @@ class Registry(ABC):
             scheduler: BaseScheduler,
             systemPerformance: AllSystemPerformance,
             profiler: MasterProfiler,
+            is_container_mode: bool,
             waitTimeout: int = 0,
             networkController: NetworkController = None):
         self.profiler = profiler
@@ -76,6 +77,7 @@ class Registry(ABC):
 
         self.networkController = networkController
         self.singer = Singer(self.basicComponent.key_file)
+        self.is_container_mode = is_container_mode
 
     def registerClient(self,
                        message: MessageReceived):
@@ -161,8 +163,9 @@ class Registry(ABC):
             'actorID': actorID,
             'name': name,
             'nameLogPrinting': nameLogPrinting,
-            'nameConsistent': nameConsistent,
-            'swarmJoinToken': self.networkController.get_worker_join_token()}
+            'nameConsistent': nameConsistent}
+        if self.is_container_mode:
+            data['swarmJoinToken'] = self.networkController.get_worker_join_token()
         messageToRespond = MessageToSend(
             messageType=MessageType.REGISTRATION,
             messageSubType=MessageSubType.REGISTERED,
@@ -177,17 +180,32 @@ class Registry(ABC):
             self,
             message: MessageReceived,
             attributeName='registeredUser'):
-        self.debugLogger.info(message)
         source = message.source
         data = message.data
         userID = self.idManager.user.next()
         applicationName = data['applicationName']
         label = data['label']
-        if applicationName not in self.applicationManager.applications:
+        if applicationName == 'ObjectDetection':
+            task_count = data['task_count']
+            from ..application.task.dependency.base import TaskWithDependency
+            tasks_dict = {}
+            entry_tasks = []
+            for i in range(task_count):
+                task_name = f'ObjectDetectionYolov7#{i}'
+                task = TaskWithDependency(task_name)
+                tasks_dict[task_name] = task
+                entry_tasks.append(task)
+            application = Application(
+                name='ObjectDetection',
+                tasksWithDependency=tasks_dict,
+                entryTasks=entry_tasks
+            )
+        elif applicationName not in self.applicationManager.applications:
             self.debugLogger.info(self.applicationManager.applications)
             self.debugLogger.warning(f'Application name not valid:{applicationName}')
             return None
-        application = self.applicationManager.applications[applicationName]
+        else:
+            application = self.applicationManager.applications[applicationName]
         applicationCopy: Application = application.copy(withLabel=label)
         name, nameLogPrinting, nameConsistent = self.nameFactory.nameUser(
             source, userID, applicationCopy)
@@ -212,9 +230,10 @@ class Registry(ABC):
                 decisionsQueue=self.decisionsQueue)
             if not schedulingSuccess:
                 return
-            network = self.networkController.create_network_for_request(user.nameConsistent)
-            self.networkController.connect_container_to_network('Master', network.name)
-            self.debugLogger.info('Master joined network %s', network.name)
+            if self.is_container_mode:
+                network = self.networkController.create_network_for_request(user.nameConsistent)
+                self.networkController.connect_container_to_network('Master', network.name)
+                self.debugLogger.info('Master joined network %s', network.name)
             self.checkTaskExecutorForUser(user=user)
         except Exception as e:
             print_exc()

@@ -1,1 +1,0 @@
-FROM cloudslab/fogbus2-roadside_camera_object_detection:1.0
