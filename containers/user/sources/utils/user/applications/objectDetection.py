@@ -116,7 +116,7 @@ class ObjectDetection(ApplicationUserSide):
         base = 640
         font_scale = 0.75 * self.window_height / base
         thickness = round(1 * self.window_height / base + 0.45)
-        org = (10 * self.window_height / base, 50 * self.window_height / base)
+        org = (round(10 * self.window_height / base),  round(50 * self.window_height / base))
         for items in objects:
             cls, label, conf, bbox = items['cls'], items['label'], items['conf'], items['bbox']
             x1, y1, x2, y2 = bbox
@@ -137,7 +137,7 @@ class ObjectDetection(ApplicationUserSide):
             cv2.putText(
                 frame,
                 f'FPS: {fps}',
-                (10, 50),
+                org,
                 cv2.FONT_HERSHEY_SIMPLEX,
                 font_scale,
                 (255, 255, 255),
