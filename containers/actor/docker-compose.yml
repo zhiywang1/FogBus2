@@ -12,11 +12,9 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: Australia/Melbourne
-      PYTHONUNBUFFERED: 0
     restart: unless-stopped
     networks:
       - fogbus2
-
 networks:
   fogbus2:
     external: true

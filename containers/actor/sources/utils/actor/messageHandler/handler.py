@@ -88,8 +88,6 @@ class ActorMessageHandler:
         name = data['name']
         nameLogPrinting = data['nameLogPrinting']
         nameConsistent = data['nameConsistent']
-        if self.containerManager.isContainerMode:
-            swarmJoinToken = data['swarmJoinToken']
         self.basicComponent.setName(
             addr=self.basicComponent.addr,
             name=name,
@@ -99,13 +97,18 @@ class ActorMessageHandler:
             setIsRegistered=True)
         self.containerManager.tryRenamingContainerName(
             newName=self.basicComponent.nameLogPrinting)
-        try:
-            self.basicComponent.debugLogger.info(
-                'Joining swarm at %s', source.addr[0])
-            self.containerManager.dockerClient.swarm.join(remote_addrs=[f'source.addr[0]:2377'],
-                                                          join_token=swarmJoinToken)
-        except Exception as e:
-            pass
+        if self.containerManager.isContainerMode and self.containerManager.enableOverlay:
+            try:
+                self.basicComponent.debugLogger.info(
+                    'Joining swarm at %s', source.addr[0])
+                self.containerManager.dockerClient.swarm.join(
+                    remote_addrs=[f'source.addr[0]:2377'],
+                    join_token=data['swarmJoinToken'])
+            except Exception as e:
+                self.basicComponent.debugLogger.error(
+                    'Ignoring error: cannot join swarm at %s: %s',
+                    source.addr[0],
+                    str(e))
         self.basicComponent.debugLogger.info("Registered, running...")
 
     def handleInitTaskExecutor(self,
@@ -121,7 +124,7 @@ class ActorMessageHandler:
         taskName = data['taskName']
         taskToken = data['taskToken']
         childTaskTokens = data['childrenTaskTokens']
-        networkName = data['networkName']
+        networkName = data['networkName'] if self.containerManager.enableOverlay else None
         signedAttributes = data['signedAttributes']
         signature = data['signature']
         self.initiator.initTaskExecutor(

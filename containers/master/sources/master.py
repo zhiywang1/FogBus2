@@ -44,7 +44,8 @@ class Master:
             enableTLS: bool = False,
             certFile: str = '',
             keyFile: str = '',
-            domainName: str = ''):
+            domainName: str = '',
+            enableOverlay: bool = False):
         self.parsedArgs = parsedArgs
 
         self.basicComponent = BasicComponent(
@@ -63,7 +64,8 @@ class Master:
         self.loggerManager = LoggerManager(basicComponent=self.basicComponent)
         self.containerManager = ContainerManager(
             basicComponent=self.basicComponent,
-            containerName=containerName)
+            containerName=containerName,
+            enableOverlay=enableOverlay)
         self.applicationManager = ApplicationManager(
             databaseType=databaseType
         )
@@ -85,8 +87,11 @@ class Master:
             self.basicComponent.debugLogger.error(
                 'Scheduler name is invalid: %s', schedulerName)
             terminate()
-        docker_client = self.containerManager.dockerClient
-        self.networkController = NetworkController(docker_client)
+        if self.containerManager.isContainerMode and self.containerManager.enableOverlay:
+            docker_client = self.containerManager.dockerClient
+            self.networkController = NetworkController(docker_client)
+        else:
+            self.networkController = None
         self.registry = Registry(
             basicComponent=self.basicComponent,
             applicationManager=self.applicationManager,
@@ -95,7 +100,8 @@ class Master:
             profiler=self.profiler,
             waitTimeout=waitTimeout,
             networkController=self.networkController,
-            is_container_mode=self.containerManager.isContainerMode)
+            is_container_mode=self.containerManager.isContainerMode,
+            enableOverlay=self.containerManager.enableOverlay)
         self.resourcesDiscovery = MasterResourcesDiscovery(
             registry=self.registry,
             basicComponent=self.basicComponent,
@@ -334,6 +340,13 @@ def parseArg():
         default='fogbus2',
         type=str,
         help='Domain Name')
+    parser.add_argument(
+        '--enableOverlay',
+        metavar='enableOverlay',
+        nargs='?',
+        default=False,
+        type=bool,
+        help='Enable docker overlay or not')
 
     return parser.parse_args()
 
@@ -355,5 +368,6 @@ if __name__ == '__main__':
         enableTLS=args_.enableTLS,
         certFile=args_.certFile,
         keyFile=args_.keyFile,
-        domainName=args_.domainName)
+        domainName=args_.domainName,
+        enableOverlay=args_.enableOverlay)
     master_.run()

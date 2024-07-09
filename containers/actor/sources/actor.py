@@ -28,7 +28,8 @@ class Actor:
             enableTLS: bool = False,
             certFile: str = '',
             keyFile: str = '',
-            domainName: str = ''):
+            domainName: str = '',
+            enableOverlay: bool = False):
         self.basicComponent = BasicComponent(
             ignoreSocketError=True,
             role=ComponentRole.ACTOR,
@@ -46,7 +47,8 @@ class Actor:
         self.discoverIfUnset()
         self.containerManager = ContainerManager(
             basicComponent=self.basicComponent,
-            containerName=containerName)
+            containerName=containerName,
+            enableOverlay=enableOverlay)
         self.profiler = ActorProfiler(
             basicComponent=self.basicComponent,
             dockerClient=self.containerManager.dockerClient)
@@ -212,6 +214,13 @@ def parseArg():
         default='fogbus2',
         type=str,
         help='Domain Name')
+    parser.add_argument(
+        '--enableOverlay',
+        metavar='enableOverlay',
+        nargs='?',
+        default=False,
+        type=bool,
+        help='Enable docker overlay or not')
 
     return parser.parse_args()
 
@@ -227,5 +236,6 @@ if __name__ == '__main__':
         enableTLS=args.enableTLS,
         certFile=args.certFile,
         keyFile=args.keyFile,
-        domainName=args.domainName)
+        domainName=args.domainName,
+        enableOverlay=args.enableOverlay)
     actor_.run()

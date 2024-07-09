@@ -1,33 +1,22 @@
 # Base
-FROM python:3.9-alpine3.14 as base
+FROM python:3.9-slim as base
 
-FROM base as builder
+FROM base as pythonlibs
 
-RUN mkdir /install
-WORKDIR /install
-
-## Dependencies
-RUN apk add --no-cache \
-    make automake gcc g++ subversion \
-    linux-headers
+RUN python -m pip install --upgrade pip
+COPY ./sources/requirements.txt /tmp/requirements.txt
+RUN python -m pip install --prefix=/install  -r /tmp/requirements.txt
 
 
-## Python libraries
-RUN python -m pip install --retries 100 --default-timeout=600  --no-cache-dir --upgrade pip
-COPY ./sources/requirements.txt /install/requirements.txt
-RUN python -m pip install --retries 100 --default-timeout=600  \
-    --prefix=/install \
-    --no-cache-dir \
-    -r /install/requirements.txt
-
-# Copy files
 FROM base
-COPY --from=builder /install /usr/local
+WORKDIR /workplace
+COPY --from=pythonlibs /install /usr/local
 COPY ./sources/ /workplace
 
 # Hostname
 RUN echo "RemoteLogger" > /etc/hostname
-
+RUN openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key \
+               -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"
 # Run RemoteLogger
 WORKDIR /workplace
-ENTRYPOINT ["python", "remoteLogger.py"]
+ENTRYPOINT ["python", "-u", "remoteLogger.py"]

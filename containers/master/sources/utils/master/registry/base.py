@@ -51,7 +51,8 @@ class Registry(ABC):
             profiler: MasterProfiler,
             is_container_mode: bool,
             waitTimeout: int = 0,
-            networkController: NetworkController = None):
+            networkController: NetworkController = None,
+            enableOverlay: bool = False):
         self.profiler = profiler
         self.systemPerformance = systemPerformance
         self.applicationManager = applicationManager
@@ -78,6 +79,7 @@ class Registry(ABC):
         self.networkController = networkController
         self.singer = Singer(self.basicComponent.key_file)
         self.is_container_mode = is_container_mode
+        self.enableOverlay = enableOverlay
 
     def registerClient(self,
                        message: MessageReceived):
@@ -164,7 +166,7 @@ class Registry(ABC):
             'name': name,
             'nameLogPrinting': nameLogPrinting,
             'nameConsistent': nameConsistent}
-        if self.is_container_mode:
+        if self.is_container_mode and self.enableOverlay:
             data['swarmJoinToken'] = self.networkController.get_worker_join_token()
         messageToRespond = MessageToSend(
             messageType=MessageType.REGISTRATION,
@@ -230,7 +232,7 @@ class Registry(ABC):
                 decisionsQueue=self.decisionsQueue)
             if not schedulingSuccess:
                 return
-            if self.is_container_mode:
+            if self.is_container_mode and self.enableOverlay:
                 network = self.networkController.create_network_for_request(user.nameConsistent)
                 self.networkController.connect_container_to_network('Master', network.name)
                 self.debugLogger.info('Master joined network %s', network.name)
@@ -461,7 +463,10 @@ class Registry(ABC):
                             taskToken=taskToken,
                             childrenTaskTokens=childrenTaskTokens)
                         continue
-            networkName = self.networkController.generate_network_name(user.nameConsistent)
+            if self.is_container_mode and self.enableOverlay:
+                networkName = self.networkController.generate_network_name(user.nameConsistent)
+            else:
+                networkName = None
             self.sendInitTaskExecutorMsg(
                 hostID=hostID,
                 user=user,
@@ -511,10 +516,11 @@ class Registry(ABC):
             'label': user.application.label,
             'userID': user.componentID,
             'childrenTaskTokens': childrenTaskTokens,
-            'networkName': networkName,
             'actorID': actor.componentID,
-            'signedAttributes': ['taskName', 'taskToken', 'actorID', 'userID', 'childrenTaskTokens', 'networkName']}
-        from .signature.base import helper
+            'signedAttributes': ['taskName', 'taskToken', 'actorID', 'userID', 'childrenTaskTokens']}
+        if networkName:
+            data['networkName'] = networkName
+            data['signedAttributes'].append('networkName')
         signed_data = self.singer.sign_dictionary(data)
         signed_data['taskName'] = taskNameLabeled
         self.basicComponent.sendMessage(

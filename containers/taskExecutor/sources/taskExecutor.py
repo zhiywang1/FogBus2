@@ -12,7 +12,7 @@ from utils import MessageType
 from utils import PeriodicTaskRunner
 from utils import PeriodicTasks
 from utils import terminate
-from utils.taskExecutor import BaseTask
+from utils.taskExecutor.tasks.base import BaseTask
 from utils.taskExecutor import initTask
 from utils.taskExecutor import RegistrationManager
 from utils.taskExecutor import ResourcesProfiler

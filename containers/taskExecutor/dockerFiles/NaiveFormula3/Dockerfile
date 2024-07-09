@@ -1,25 +1,21 @@
 # Base
-FROM python:3.9-alpine3.19 as base
+FROM python:3.9-slim as base
 
-FROM base as builder
-WORKDIR /workplace
-RUN apk update
-RUN apk add --no-cache \
-    gcc build-base linux-headers
-COPY ./sources/requirements.txt /workplace/requirements.txt
-RUN pip install --no-cache-dir -r  requirements.txt
+RUN apt update
+RUN apt install -y gcc make
+RUN apt install -y libgl1-mesa-glx
+RUN apt install -y libglib2.0-0 libsm6 libxrender1 libxext6
 
-FROM base
-COPY  --from=builder /usr/local/lib/python3.9/ /usr/local/lib/python3.9/
-
-WORKDIR /workplace
-COPY ./sources /workplace
-RUN apk update && apk add --no-cache openssl
+RUN pip install -U pip
+COPY ./sources/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
 # Hostname
+WORKDIR /workplace
+COPY ./sources/ /workplace
 RUN echo "NaiveFormula3" > /etc/hostname
 RUN openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key \
                -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"
 
 # Run NaiveFormula3
-ENTRYPOINT ["python", "taskExecutor.py"]
+ENTRYPOINT ["python", "-u", "taskExecutor.py"]

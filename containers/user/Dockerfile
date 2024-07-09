@@ -17,4 +17,4 @@ RUN openssl req -new -x509 -days 365 -nodes -out server.crt -keyout server.key \
                -subj "/C=US/ST=State/L=City/O=Organization/OU=Department/CN=example.com"
 
 # Run User
-ENTRYPOINT ["python", "user.py"]
+ENTRYPOINT ["python", "-u", "user.py"]

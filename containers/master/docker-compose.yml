@@ -16,8 +16,6 @@ services:
     restart: unless-stopped
     networks:
       - fogbus2
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
 networks:
   fogbus2:
     external: true

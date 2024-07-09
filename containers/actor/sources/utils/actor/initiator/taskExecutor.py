@@ -66,6 +66,7 @@ class TaskExecutorInitiator(BaseInitiator):
             args += ' --enableTLS True'
             args += ' --certFile server.crt'
             args += ' --keyFile  server.key'
+
         if not isContainerMode:
             args += ' --bindIP %s' % actor.addr[0] + \
                     ' --masterIP %s' % master.addr[0] + \
@@ -104,7 +105,8 @@ class TaskExecutorInitiator(BaseInitiator):
                 ' --cpuFrequency %f' % self.cpu.frequency + \
                 ' --verbose %d' % self.basicComponent.debugLogger.level
         args += ' --containerName %s' % containerName
-        args += ' --networkName %s' % networkName
+        if networkName:
+            args += ' --networkName %s' % networkName
         if baseTaskName.startswith('ObjectDetectionYolov7'):
             baseTaskName = 'ObjectDetectionYolov7'
         imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
