@@ -1,52 +1,59 @@
 #/bin/bash
 
-run_baseline () {
-  docker run \
-    --rm \
-    --name RemoteLogger \
-     -v ./sources:/workplace \
-     -v /var/run/docker.sock:/var/run/docker.sock \
-     -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0 \
-      --containerName RemoteLogger \
-      --bindIP $1 \
-      --bindPort 5000 \
-      --domainName fogbus2
+info () {
+  echo "[*] Use parsed command"
+  formatted_command=$(echo "$1" | sed -e 's/ -/ \r\n  -/g')
+  echo "$formatted_command"
+  echo "[====================================]"
 }
 
+run_baseline () {
+  command+="cd sources && python remoteLogger.py $args"
+  info "$command"
+  eval $command
+}
+
+run_baseline_in_container () {
+  command+="docker run --rm --name RemoteLogger -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0"
+  command+="$args $container_args"
+  info "$command"
+  eval $command
+}
 run_tls () {
-  docker run \
-    --rm \
-    --name RemoteLogger \
-     -v ./sources:/workplace \
-     -v /var/run/docker.sock:/var/run/docker.sock \
-     -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0 \
-      --containerName RemoteLogger \
-      --bindIP $1 \
-      --bindPort 5000 \
-      --domainName fogbus2 \
-      --enableTLS True \
-      --certFile server.crt \
-      --keyFile server.key
+  command+="cd sources && python remoteLogger.py $args $tls_args"
+  info "$command"
+  eval $command
+}
+
+run_tls_in_container () {
+    command+="docker run --rm --name RemoteLogger -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0"
+    command+=" $args $container_args $tls_args"
+  info "$command"
+  eval $command
 }
 
 # Function to display help message
 usage() {
-    echo "Usage: $0 [-h hostname] [-t enable TLS or not]"
+    echo "Usage: $0 [-h hostname] [-t enable TLS or not] [-c in container or not]"
     exit 1
 }
 
 # Initialize variables
 hostname=""
 enable_tls=0
+in_container=0
 
 # Parse options using getopts
-while getopts ":h:t" opt; do
+while getopts ":h:tc" opt; do
     case ${opt} in
         h )
             hostname=$OPTARG
             ;;
         t )
             enable_tls=1
+            ;;
+        c )
+            in_container=1
             ;;
         \? )
             echo "Invalid option: -$OPTARG" 1>&2
@@ -66,16 +73,30 @@ if [ -z "$hostname" ]; then
     usage
 fi
 
+command=""
+args=" --bindIP $hostname --bindPort 5000 --domainName fogbus2"
+tls_args=" --enableTLS True --certFile server.crt --keyFile server.key"
+container_args=" --containerName RemoteLogger"
+
 # Display parsed arguments
 echo "[====================================]"
 echo "[*] Hostname: $hostname"
 echo "[*] Enable TLS: $enable_tls"
-echo "[*] Running RemoteLogger container..."
+echo "[*] In container: $in_container"
+echo "[*] Running RemoteLogger..."
 echo "[====================================]"
 
 # if enable TLS is not set, run baseline
 if [ $enable_tls -eq 0 ]; then
-    run_baseline $hostname
+    if [ $in_container -eq 1 ]; then
+        run_baseline_in_container
+    else
+        run_baseline
+    fi
 else
-    run_tls $hostname
+    if [ $in_container -eq 1 ]; then
+        run_tls_in_container
+    else
+        run_tls
+    fi
 fi
