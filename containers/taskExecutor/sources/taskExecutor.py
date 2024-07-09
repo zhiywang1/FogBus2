@@ -89,8 +89,6 @@ class TaskExecutor:
             basicComponent=self.basicComponent,
             periodicTasks=periodicTasks)
 
-
-
     def updateResources(self):
         self.profiler.profileResources()
 
@@ -245,7 +243,6 @@ def parseArg():
 
 if __name__ == '__main__':
     args = parseArg()
-
     if args.childrenTaskTokens == 'None':
         args.childrenTaskTokens = []
     elif isinstance(args.childrenTaskTokens, str):

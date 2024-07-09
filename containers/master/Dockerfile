@@ -25,7 +25,7 @@ RUN python -m pip install --prefix=/install kiwisolver==1.3.1
 RUN python -m pip install --prefix=/install mysql-connector-python==8.0.26
 RUN python -m pip install --prefix=/install Pillow==9.0.1
 RUN python -m pip install --prefix=/install protobuf==3.17.3
-RUN python -m pip install --prefix=/install psutil==5.8.0
+RUN python -m pip install --prefix=/install psutil==6.0.0
 RUN python -m pip install --prefix=/install pyparsing==2.4.7
 RUN python -m pip install --prefix=/install python-dateutil==2.8.2
 RUN python -m pip install --prefix=/install python-dotenv==0.19.0

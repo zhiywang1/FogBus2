@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from PIL import Image
-from yolov7.utils.general import non_max_suppression, increment_path, xyxy2xywh
+from yolov7_utils.general import non_max_suppression, increment_path, xyxy2xywh
 
 
 def autopad(k, p=None):  # kernel, padding

@@ -4,11 +4,9 @@ import math
 import os
 import platform
 import subprocess
-import time
 from contextlib import contextmanager
 from copy import deepcopy
 from pathlib import Path
-
 import torch
 import torch.backends.cudnn as cudnn
 import torch.nn as nn
@@ -352,12 +350,12 @@ class TracedModel(nn.Module):
 
         traced_script_module = torch.jit.trace(self.model, rand_example, strict=False)
         # traced_script_module = torch.jit.script(self.model)
-        traced_script_module.save("traced_model.pt")
+        # traced_script_module.save("traced_model.pt")
         self.model = traced_script_module
         self.model.to(device)
         self.detect_layer.to(device)
 
-    def forward(self, x, augment=False, profile=False):
+    def forward(self, x):
         out = self.model(x)
         out = self.detect_layer(out)
         return out

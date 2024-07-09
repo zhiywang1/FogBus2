@@ -1,7 +1,10 @@
 import os
 from .base import BaseTask
-from yolov7 import Yolov7
+import sys
 
+sys.path.insert(0, os.path.dirname(__file__))
+sys.path.insert(0, os.path.dirname(__file__) + '/yolov7')
+from yolov7 import Yolov7
 
 class ObjectDetectionYoloV7(BaseTask):
     def __init__(self):
@@ -19,5 +22,5 @@ class ObjectDetectionYoloV7(BaseTask):
             'objects': objects,
             'frame_count': input_data['frame_count']
         }
-        # print(input_data['frame_count'])
+        print(f'Frame count: {input_data["frame_count"]}, objects count: {len(objects)}')
         return result

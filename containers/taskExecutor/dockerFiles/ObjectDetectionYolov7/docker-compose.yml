@@ -1,0 +1,11 @@
+services:
+
+  fogbus2-object_detection_yolov7:
+    image: cloudslab/fogbus2-object_detection_yolov7:1.0
+    build:
+      context: ../../
+      dockerfile: dockerFiles/ObjectDetectionYolov7/Dockerfile
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne

@@ -1,10 +1,9 @@
 import torch
 from models.common import *
 from models.experimental import *
-from yolov7.utils.torch_utils import fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
+from yolov7_utils.torch_utils import fuse_conv_and_bn, model_info, scale_img, initialize_weights, \
     select_device, copy_attr
-from yolov7.utils.loss import SigmoidBin
-
+from yolov7_utils.loss import SigmoidBin
 try:
     import thop  # for FLOPS computation
 except ImportError:
@@ -532,7 +531,6 @@ class Model(nn.Module):
 
             if not hasattr(self, 'traced'):
                 self.traced = False
-
             if self.traced:
                 if isinstance(m, Detect) or isinstance(m, IDetect) or isinstance(m, IAuxDetect) or isinstance(m,
                                                                                                               IKeypoint):
@@ -541,9 +539,6 @@ class Model(nn.Module):
             x = m(x)  # run
 
             y.append(x if m.i in self.save else None)  # save output
-
-        if profile:
-            print('%.1fms total' % sum(dt))
         return x
 
     def fuse(self):  # fuse model Conv2d() + BatchNorm2d() layers

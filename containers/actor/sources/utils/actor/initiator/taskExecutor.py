@@ -8,7 +8,6 @@ from typing import List
 from typing import Tuple
 
 from docker.client import DockerClient
-from docker.errors import APIError
 
 from .base import BaseInitiator
 from ...component.basic import BasicComponent
@@ -63,25 +62,24 @@ class TaskExecutorInitiator(BaseInitiator):
         childTaskTokens = self.serialize(childTaskTokens)
         args = ''
         args += ' --domainName %s' % self.basicComponent.domainName
-        self.basicComponent.debugLogger.info(self.basicComponent.tls_enabled)
         if self.basicComponent.tls_enabled:
             args += ' --enableTLS True'
             args += ' --certFile server.crt'
             args += ' --keyFile  server.key'
         if not isContainerMode:
             args += ' --bindIP %s' % actor.addr[0] + \
-                   ' --masterIP %s' % master.addr[0] + \
-                   ' --masterPort %d' % master.addr[1] + \
-                   ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-                   ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
-                   ' --userID %s' % userID + \
-                   ' --taskName %s' % baseTaskName + \
-                   ' --taskToken %s' % taskToken + \
-                   ' --childrenTaskTokens %s' % childTaskTokens + \
-                   ' --actorID %s' % actor.componentID + \
-                   ' --totalCPUCores %d' % self.cpu.cores + \
-                   ' --cpuFrequency %f' % self.cpu.frequency + \
-                   ' --verbose %d' % self.basicComponent.debugLogger.level
+                    ' --masterIP %s' % master.addr[0] + \
+                    ' --masterPort %d' % master.addr[1] + \
+                    ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
+                    ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
+                    ' --userID %s' % userID + \
+                    ' --taskName %s' % baseTaskName + \
+                    ' --taskToken %s' % taskToken + \
+                    ' --childrenTaskTokens %s' % childTaskTokens + \
+                    ' --actorID %s' % actor.componentID + \
+                    ' --totalCPUCores %d' % self.cpu.cores + \
+                    ' --cpuFrequency %f' % self.cpu.frequency + \
+                    ' --verbose %d' % self.basicComponent.debugLogger.level
             self.initTaskExecutorOnHost(args=args)
             return
 
@@ -92,23 +90,23 @@ class TaskExecutorInitiator(BaseInitiator):
             time())
         containerName = filterIllegalCharacter(string=containerName)
         containerName = hash_to_base36(containerName)
-        args = ' --bindIP %s' % containerName + \
-               ' --masterIP %s' % master.addr[0] + \
-               ' --masterPort %d' % master.addr[1] + \
-               ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-               ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
-               ' --userID %s' % userID + \
-               ' --taskName %s' % baseTaskName + \
-               ' --taskToken %s' % taskToken + \
-               ' --childrenTaskTokens %s' % childTaskTokens + \
-               ' --actorID %s' % actor.componentID + \
-               ' --totalCPUCores %d' % self.cpu.cores + \
-               ' --cpuFrequency %f' % self.cpu.frequency + \
-               ' --verbose %d' % self.basicComponent.debugLogger.level
+        args += ' --bindIP %s' % containerName + \
+                ' --masterIP %s' % master.addr[0] + \
+                ' --masterPort %d' % master.addr[1] + \
+                ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
+                ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
+                ' --userID %s' % userID + \
+                ' --taskName %s' % baseTaskName + \
+                ' --taskToken %s' % taskToken + \
+                ' --childrenTaskTokens %s' % childTaskTokens + \
+                ' --actorID %s' % actor.componentID + \
+                ' --totalCPUCores %d' % self.cpu.cores + \
+                ' --cpuFrequency %f' % self.cpu.frequency + \
+                ' --verbose %d' % self.basicComponent.debugLogger.level
         args += ' --containerName %s' % containerName
         args += ' --networkName %s' % networkName
-        if baseTaskName.startswith('object_detection_yolov7'):
-            baseTaskName = 'object_detection_yolov7'
+        if baseTaskName.startswith('ObjectDetectionYolov7'):
+            baseTaskName = 'ObjectDetectionYolov7'
         imageName = 'cloudslab/fogbus2-%s:1.0' % camelToSnake(baseTaskName)
 
         self.initTaskExecutorInContainer(
@@ -125,9 +123,9 @@ class TaskExecutorInitiator(BaseInitiator):
         yolo_path = os.path.abspath(os.path.join(script_path, '../../taskExecutor/sources/utils/taskExecutor/tasks'))
         sys.path.insert(0, yolo_path)
         self.basicComponent.debugLogger.info(args)
-        system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
-               ' && cd ../../taskExecutor/sources/'
-               f'&& python taskExecutor.py {args} &')
+        # system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
+        #        ' && cd ../../taskExecutor/sources/'
+        #        f'&& python -m memory_profiler taskExecutor.py {args} &')
         self.basicComponent.debugLogger.debug(
             'Init TaskExecutor on host:\n %s', args)
 
@@ -145,7 +143,6 @@ class TaskExecutorInitiator(BaseInitiator):
             'signedAttributes': signedAttributes,
             'signature': signature
         }
-
         self.dockerClient.containers.run(
             name=containerName,
             detach=True,

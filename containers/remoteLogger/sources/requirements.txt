@@ -4,7 +4,7 @@ docker==5.0.0
 idna==3.2
 mysql-connector-python==8.0.26
 protobuf==3.17.3
-psutil==5.8.0
+psutil==6.0.0
 python-dotenv==0.19.0
 requests==2.26.0
 six==1.16.0

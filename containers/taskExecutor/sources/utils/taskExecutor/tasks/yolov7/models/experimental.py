@@ -1,9 +1,3 @@
-import sys
-import os
-
-# script_path = os.path.dirname(os.path.abspath(__file__))
-# yolov7_path = os.path.abspath(os.path.join(script_path, '../'))
-# sys.path.insert(0, yolov7_path)
 import numpy as np
 import random
 import torch
@@ -266,10 +260,4 @@ def attempt_load(weights, map_location=None):
         elif type(m) is Conv:
             m._non_persistent_buffers_set = set()  # pytorch 1.6.0 compatibility
 
-    if len(model) == 1:
-        return model[-1]  # return model
-    else:
-        print('Ensemble created with %s\n' % weights)
-        for k in ['names', 'stride']:
-            setattr(model, k, getattr(model[-1], k))
-        return model  # return ensemble
+    return model[-1]  # return model
