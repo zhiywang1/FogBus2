@@ -126,6 +126,9 @@ class TaskExecutorInitiator(BaseInitiator):
         # system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
         #        ' && cd ../../taskExecutor/sources/'
         #        f'&& python -m memory_profiler taskExecutor.py {args} &')
+        system(f'export PYTHONPATH={yolo_path}:$PYTHONPATH'
+               ' && cd ../../taskExecutor/sources/'
+               f'&& python taskExecutor.py {args} &')
         self.basicComponent.debugLogger.debug(
             'Init TaskExecutor on host:\n %s', args)
 
