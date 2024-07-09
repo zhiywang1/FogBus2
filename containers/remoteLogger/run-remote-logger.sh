@@ -7,31 +7,6 @@ info () {
   echo "[====================================]"
 }
 
-run_baseline () {
-  command+="cd sources && python remoteLogger.py $args"
-  info "$command"
-  eval $command
-}
-
-run_baseline_in_container () {
-  command+="docker run --rm --name RemoteLogger -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0"
-  command+="$args $container_args"
-  info "$command"
-  eval $command
-}
-run_tls () {
-  command+="cd sources && python remoteLogger.py $args $tls_args"
-  info "$command"
-  eval $command
-}
-
-run_tls_in_container () {
-    command+="docker run --rm --name RemoteLogger -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0"
-    command+=" $args $container_args $tls_args"
-  info "$command"
-  eval $command
-}
-
 # Function to display help message
 usage() {
     echo "Usage: $0 [-h hostname] [-t enable TLS or not] [-c in container or not]"
@@ -74,6 +49,8 @@ if [ -z "$hostname" ]; then
 fi
 
 command=""
+command_base="cd sources && python remoteLogger.py"
+docker_command_base="docker run --rm --name RemoteLogger -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5000:5000 cloudslab/fogbus2-remote_logger:1.0"
 args=" --bindIP $hostname --bindPort 5000 --domainName fogbus2"
 tls_args=" --enableTLS True --certFile server.crt --keyFile server.key"
 container_args=" --containerName RemoteLogger"
@@ -86,17 +63,24 @@ echo "[*] In container: $in_container"
 echo "[*] Running RemoteLogger..."
 echo "[====================================]"
 
-# if enable TLS is not set, run baseline
+# Parse command
 if [ $enable_tls -eq 0 ]; then
     if [ $in_container -eq 1 ]; then
-        run_baseline_in_container
+        # Command of running RemoteLogger in container
+        command="$docker_command_base $args $container_args"
     else
-        run_baseline
+        # Command of running RemoteLogger
+        command="$command_base $args"
     fi
 else
     if [ $in_container -eq 1 ]; then
-        run_tls_in_container
+        # Command of running RemoteLogger in container with TLS
+        command="$docker_command_base $args $tls_args $container_args"
     else
-        run_tls
+        # Command of running RemoteLogger with TLS
+        command="$command_base $args $tls_args"
     fi
 fi
+
+info "$command"
+eval $command
