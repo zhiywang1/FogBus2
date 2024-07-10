@@ -11,11 +11,6 @@ RUN python -m pip install --upgrade pip
 COPY ./sources/requirements.txt /tmp/requirements.txt
 RUN python -m pip install --prefix=/install  -r /tmp/requirements.txt
 
-#RUN apt-get update && \
-#    apt-get install -y make automake gcc g++ subversion linux-headers-generic \
-#                       gfortran libopenblas-dev liblapack-dev libjpeg-dev zlib1g-dev ninja-build \
-#                       libqhull-dev qhull-bin libffi-dev iperf3
-
 # Copy files
 FROM base as oslibs
 RUN apt update

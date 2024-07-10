@@ -37,7 +37,8 @@ class ObjectDetection(ApplicationUserSide):
     def _send_frame(self, frame_count: int):
         ret, frame = self.sensor.read()
         if not ret:
-            return ret
+            self._set_sensor()
+            return True
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_rgb_resized = cv2.resize(frame_rgb, (self.target_height, self.target_height))
         input_data = {
@@ -50,12 +51,15 @@ class ObjectDetection(ApplicationUserSide):
         # print('Sent frame:', frame_count)
         return True
 
-    def _frame_sender(self):
-        self.basicComponent.debugLogger.info('Frame sender started')
+    def _set_sensor(self):
         if self.video_path is None:
             self.sensor = cv2.VideoCapture(0)
         else:
             self.sensor = cv2.VideoCapture(self.video_path)
+
+    def _frame_sender(self):
+        self.basicComponent.debugLogger.info('Frame sender started')
+        self._set_sensor()
         frame_count = 0
         last_sent_time = time()
         while True:
@@ -80,7 +84,9 @@ class ObjectDetection(ApplicationUserSide):
             result = self.resultForActuator.get()
             frame_count = result['frame_count']
             self.responseTime.update((time() - self.sent_times[frame_count % self.fps]) * 1000)
-            self.basicComponent.debugLogger.info('Response time: %.3f ms', self.responseTime.median())
+
+            self.basicComponent.debugLogger.info(
+                f'Frame Count: {frame_count}, Response time: {self.responseTime.median():.3f} ms')
             objects = result['objects']
             i, curr_time = 0, time()
             draw_times.append(curr_time)
@@ -116,7 +122,7 @@ class ObjectDetection(ApplicationUserSide):
         base = 640
         font_scale = 0.75 * self.window_height / base
         thickness = round(1 * self.window_height / base + 0.45)
-        org = (round(10 * self.window_height / base),  round(50 * self.window_height / base))
+        org = (round(10 * self.window_height / base), round(50 * self.window_height / base))
         for items in objects:
             cls, label, conf, bbox = items['cls'], items['label'], items['conf'], items['bbox']
             x1, y1, x2, y2 = bbox

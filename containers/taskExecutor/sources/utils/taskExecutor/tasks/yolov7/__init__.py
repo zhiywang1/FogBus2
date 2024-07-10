@@ -19,13 +19,12 @@ class Yolov7:
         self.names = self.model.names
         self.img_size = 480
 
-        # self.model = TracedModel(self.model, self.device, self.img_size)
-        self.threshold = 0.25
+        self.model = TracedModel(self.model, self.device, self.img_size)
+        self.threshold = 0.20
 
     def load(self):
         ckpt = torch.load(self.weights_path, map_location=self.device)
         return ckpt['ema' if ckpt.get('ema') else 'model'].float().fuse().eval()
-
 
     def detect(self, image_rgb_resized):
         img = torch.from_numpy(image_rgb_resized).permute(2, 0, 1).to(self.device)
