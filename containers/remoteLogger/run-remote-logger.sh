@@ -13,10 +13,42 @@ usage() {
     exit 1
 }
 
+# Function to toggle DB hostname
+toggle_hosts() {
+    local mode=$1
+
+    if [[ "$mode" != "0" && "$mode" != "1" ]]; then
+        echo "Usage: toggle_hosts <0|1>"
+        return 1
+    fi
+
+    if [[ "$mode" == "0" ]]; then
+        HOST_VALUE="$out_container_db_host"
+        HOST1_VALUE="$in_container_db_host"
+    else
+        HOST_VALUE="$in_container_db_host"
+        HOST1_VALUE="$out_container_db_host"
+    fi
+
+    # Create a temporary file
+    tmp_file=$(mktemp)
+
+    # Update the values
+    sed -e "s/^HOST1=.*/HOST1=$HOST1_VALUE/" -e "s/^HOST=.*/HOST=$HOST_VALUE/" "$env_file" > "$tmp_file"
+
+    # Move the temporary file to the original file
+    mv "$tmp_file" "$env_file"
+
+    echo "[*] DB hostname has been set as: $HOST_VALUE"
+}
+
 # Initialize variables
 hostname=""
 enable_tls=0
 in_container=0
+env_file="./sources/.env"
+out_container_db_host="127.0.0.1"
+in_container_db_host="host.docker.internal"
 
 # Parse options using getopts
 while getopts ":h:tc" opt; do
@@ -80,6 +112,13 @@ else
         # Command of running RemoteLogger with TLS
         command="$command_base $args $tls_args"
     fi
+fi
+
+# Set DB hostname
+if [ $in_container -eq 1 ]; then
+    toggle_hosts 1
+else
+    toggle_hosts 0
 fi
 
 info "$command"

@@ -16,3 +16,4 @@ test/
 uploadArchive.sh
 **.crt
 **.key
+**.env

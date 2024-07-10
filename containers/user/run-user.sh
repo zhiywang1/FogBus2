@@ -24,9 +24,10 @@ enable_tls=0
 in_container=0
 enable_overlay=0
 extendedAppArgs=""
+show_window=0
 
 # Parse options using getopts
-while getopts ":h:rmtcoe" opt; do
+while getopts ":h:rmtcoew" opt; do
     case ${opt} in
         h )
             hostname=$OPTARG
@@ -48,6 +49,9 @@ while getopts ":h:rmtcoe" opt; do
             ;;
         e )
             extendedAppArgs=$OPTARG
+            ;;
+        w )
+            show_window=1
             ;;
         \? )
             echo "Invalid option: -$OPTARG" 1>&2
@@ -85,7 +89,7 @@ args=" --bindIP $hostname --bindPort 50101 --remoteLoggerIP $remote_logger_hostn
 tls_args=" --enableTLS True"
 container_args=" --containerName User"
 overlay_args=" --enableOverlay True"
-
+window_args=" --windowHeight 640"
 
 # Display parsed arguments
 echo "[====================================]"
@@ -103,8 +107,13 @@ if [ $enable_tls -eq 0 ]; then
       # Command of running User in container
       command="$docker_command_base $args $container_args"
   else
+    if [ $show_window -eq 1 ]; then
+      # Command of running User with window
+      command="$command_base $args $window_args"
+    else
       # Command of running User
       command="$command_base $args"
+    fi
   fi
 else
   # Enable TLS is set
@@ -119,8 +128,13 @@ else
     fi
   else
     # In container is not set
-    # Command of running User
-    command="$command_base $args $tls_args"
+    if [ $show_window -eq 1 ]; then
+      # Command of running User with window
+      command="$command_base $args $tls_args $window_args"
+    else
+      # Command of running User
+      command="$command_base $args $tls_args"
+    fi
   fi
 fi
 
