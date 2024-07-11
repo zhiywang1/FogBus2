@@ -4,7 +4,6 @@ import cv2
 from yolov7_utils.torch_utils import select_device, TracedModel
 from yolov7_utils.general import non_max_suppression
 import warnings
-
 warnings.filterwarnings("ignore", category=UserWarning)
 
 
@@ -32,8 +31,8 @@ class Yolov7:
         img /= 255.0
         img = img.unsqueeze(0)
         # t1 = time()
-
-        pred = self.model(img)[0]
+        with torch.no_grad():
+            pred = self.model(img)[0]
         # t2 = time()
 
         # d = (t2 - t1) * 1000

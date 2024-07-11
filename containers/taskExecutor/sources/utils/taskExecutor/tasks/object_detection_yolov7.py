@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.dirname(__file__) + '/yolov7')
 from yolov7 import Yolov7
 from .base import BaseTask
 
+
 class ObjectDetectionYoloV7(BaseTask):
     def __init__(self):
         super().__init__(taskID=201, taskName='ObjectDetectionYolov7')

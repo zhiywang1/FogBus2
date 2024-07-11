@@ -130,6 +130,13 @@ def parseArg():
         type=str,
         help='TaskExecutor ip.')
     parser.add_argument(
+        '--bindPort',
+        metavar='BindPort',
+        nargs='?',
+        default=0,
+        type=int,
+        help='Bind port')
+    parser.add_argument(
         '--network',
         metavar='docker network',
         type=str,
@@ -250,7 +257,7 @@ if __name__ == '__main__':
     taskExecutor_ = TaskExecutor(
         containerName=args.containerName,
         networkName=args.networkName,
-        addr=(args.bindIP, 0),
+        addr=(args.bindIP, args.bindPort),
         masterAddr=(args.masterIP, args.masterPort),
         remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         userID=args.userID,

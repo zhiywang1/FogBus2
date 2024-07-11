@@ -14,6 +14,7 @@ from ...component.basic import BasicComponent
 from ...tools import camelToSnake
 from ...tools import filterIllegalCharacter
 from ...types import CPU
+from ...config import ConfigTaskExecutor
 
 
 def hash_to_base36(data):
@@ -43,6 +44,7 @@ class TaskExecutorInitiator(BaseInitiator):
             isContainerMode=isContainerMode,
             dockerClient=dockerClient)
         self.cpu = cpu
+        self.port = ConfigTaskExecutor.portRange[0]
 
     def initTaskExecutor(
             self,
@@ -62,11 +64,16 @@ class TaskExecutorInitiator(BaseInitiator):
         childTaskTokens = self.serialize(childTaskTokens)
         args = ''
         args += ' --domainName %s' % self.basicComponent.domainName
+        if self.port >= ConfigTaskExecutor.portRange[1]:
+            self.basicComponent.debugLogger.warning("Task Executor Port out of range")
+            self.port = ConfigTaskExecutor.portRange[0]
+        args += ' --bindPort %d' % self.port
+        self.port += 1
+
         if self.basicComponent.tls_enabled:
             args += ' --enableTLS True'
             args += ' --certFile server.crt'
             args += ' --keyFile  server.key'
-
         if not isContainerMode:
             args += ' --bindIP %s' % actor.addr[0] + \
                     ' --masterIP %s' % master.addr[0] + \

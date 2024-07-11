@@ -12,6 +12,7 @@ from threading import Event
 from threading import Thread
 from traceback import print_exc
 from typing import Tuple
+from time import sleep
 
 from .message import MessageReceived
 from .messageSender import FORMAT
@@ -137,16 +138,25 @@ class MessageReceiver(MessageSender):
                 targetPort, portLower, portUpper))
         # Specified port
         if targetPort != 0:
-            success = self.listenOn(addr=(ip, targetPort))
-            if success:
-                return True
-            else:
+            try:
+                success = self.listenOn(addr=(ip, targetPort))
+                if success:
+                    return True
+            except Exception:
+                from traceback import print_exc
+                print_exc()
                 return False
+
         # Did not specify port
         for targetPort in range(portRange[0], portRange[1]):
-            success = self.listenOn(addr=(ip, targetPort))
-            if success:
-                return True
+            try:
+                success = self.listenOn(addr=(ip, targetPort))
+                if success:
+                    return True
+            except OSError:
+                self.debugLogger.warning("Failed to listen on port %d, sleep and try next port", targetPort)
+                sleep(0.1)
+                continue
         return False
 
     def wrap_socket_tls(self,
@@ -160,22 +170,17 @@ class MessageReceiver(MessageSender):
     def listenOn(self,
                  addr: Address) -> bool:
         self.addr = (self.addr[0], addr[1])
-        try:
-            self.serverSocket.setsockopt(
-                SOL_SOCKET,
-                SO_REUSEADDR,
-                1)
-            self.serverSocket.bind(addr)
-            self.serverSocket.listen()
-            self.debugLogger.info(
-                'Listening at %s' % str(self.serverSocket.getsockname()))
-            self.debugLogger.info(
-                'Advertise addr is at %s' % str(self.addr))
-            return True
-        except Exception:
-            from traceback import print_exc
-            print_exc()
-            return False
+        self.serverSocket.setsockopt(
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            1)
+        self.serverSocket.bind(addr)
+        self.serverSocket.listen()
+        self.debugLogger.info(
+            'Listening at %s' % str(self.serverSocket.getsockname()))
+        self.debugLogger.info(
+            'Advertise addr is at %s' % str(self.addr))
+        return True
 
     @abstractmethod
     def handle(self):

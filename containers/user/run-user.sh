@@ -12,7 +12,7 @@ info () {
 
 # Function to display help message
 usage() {
-    echo "Usage: $0 [-h hostname] [-r RemoteLogger hostname]  [-m Master hostname] [-t enable TLS or not] [-c in container or not] [-o enable overlay or not]"
+    echo "Usage: $0 [-h hostname] [-r RemoteLogger hostname]  [-m Master hostname] [-t enable TLS or not] [-c in container or not] [-o enable overlay or not] [-e extended application arguments] [-w show window or not]"
     exit 1
 }
 
@@ -27,7 +27,7 @@ extendedAppArgs=""
 show_window=0
 
 # Parse options using getopts
-while getopts ":h:r:m:tcoew" opt; do
+while getopts ":h:r:m:e:tcow" opt; do
     case ${opt} in
         h )
             hostname=$OPTARG
@@ -98,7 +98,7 @@ if [ -z "$master_hostname" ]; then
 fi
 
 if [ -z "$extendedAppArgs" ]; then
-    extendedAppArgs=" --applicationName ObjectDetection --videoPath ../highway-traffic.mp4 --taskCount 1"
+    extendedAppArgs="--applicationName ObjectDetection --videoPath ../highway-traffic.mp4 --taskCount 1"
 fi
 
 command_base="cd sources && python user.py"
@@ -167,6 +167,6 @@ else
   fi
 fi
 
-command+="$extendedAppArgs"
+command+=" $extendedAppArgs"
 info "$command"
 eval $command
