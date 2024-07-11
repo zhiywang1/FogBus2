@@ -24,7 +24,7 @@ class BaseRunner:
         tempContainerName = 'Temp%s' % componentName
         # os.system('docker container rm -f %s' % tempContainerName)
         command = 'cd %s' \
-                  ' && docker-compose run' \
+                  ' && docker compose run' \
                   ' --rm' \
                   ' --name %s' \
                   ' %s' \

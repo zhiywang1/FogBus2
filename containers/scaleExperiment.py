@@ -55,7 +55,7 @@ class Experiment:
         self.logger.info('Starting RemoteLogger ...')
         os.system(
             'cd ./newLogger && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name RemoteLogger '
             'remote_logger '
@@ -70,7 +70,7 @@ class Experiment:
         self.logger.info('Starting Master ...')
         os.system(
             'cd ./newMaster && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name Master '
             'master '
@@ -94,7 +94,7 @@ class Experiment:
         self.logger.info('Starting Actor ...')
         os.system(
             'cd ./newActor && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name Actor '
             'actor '
@@ -112,7 +112,7 @@ class Experiment:
         containerName = 'UserGoL%d' % int(time() * 1000)
         os.system(
             'cd ./newUser && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name %s '
             'user '
@@ -132,7 +132,7 @@ class Experiment:
         # self.logger.info('Ran Game of Life')
 
     def runUserOCR(self):
-        # docker-compose run
+        # docker compose run
         # --rm --name User
         # user User
         # 192.168.3.20
@@ -145,7 +145,7 @@ class Experiment:
         containerName = 'UserOCR%d' % int(time() * 1000)
         os.system(
             'cd ./newUser && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name %s '
             'user '

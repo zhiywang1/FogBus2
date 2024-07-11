@@ -67,7 +67,7 @@ class ImageBuilder:
                 platforms=platforms,
                 dockerHubUsername=dockerHubUsername,
                 push=push)
-        command = 'cd %s && docker-compose build' % composeFolder
+        command = 'cd %s && docker compose build' % composeFolder
         if proxy is not None:
             command += ' --build-arg http_proxy=%s' % proxy + \
                        ' --build-arg https_proxy=%s' % proxy

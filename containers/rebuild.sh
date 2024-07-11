@@ -1,7 +1,7 @@
 build() {
 
   cd $1
-  docker-compose \
+  docker compose \
     build
   cd ..
 }

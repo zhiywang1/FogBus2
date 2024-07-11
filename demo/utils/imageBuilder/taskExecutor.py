@@ -49,7 +49,7 @@ class TaskExecutorImageBuilder:
                     dockerHubUsername=dockerHubUsername,
                     push=push)
             else:
-                command = 'cd %s && docker-compose build' % folderAbsPath
+                command = 'cd %s && docker compose build' % folderAbsPath
 
                 if proxy is not None:
                     command += ' --build-arg http_proxy=%s' % proxy + \

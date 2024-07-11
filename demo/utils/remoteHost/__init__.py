@@ -50,7 +50,7 @@ class RemoteHost:
         # command = 'docker container rm -f %s' % tempContainerName
         # self.runCommand(remoteCommand=command)
         command = 'cd %s/containers/actor' \
-                  ' && docker-compose run' \
+                  ' && docker compose run' \
                   ' --rm' \
                   ' --name %s' \
                   ' fogbus2-actor' \

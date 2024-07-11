@@ -334,7 +334,7 @@ cd FogBus2/containers/remoteLogger
 **step1**: Run RemoteLogger in a Docker container.
 ```bash
 docker pull cloudslab/fogbus2-remote_logger
-docker-compose run \
+docker compose run \
                   --rm \
                   --name RemoteLogger \
                   fogbus2-remote_logger \
@@ -347,7 +347,7 @@ docker-compose run \
 ```bash
 cd FogBus2/containers/master
 docker pull cloudslab/fogbus2-master
-docker-compose run \
+docker compose run \
                   --rm \
                   --name Master \
                   fogbus2-master \
@@ -362,7 +362,7 @@ docker-compose run \
 ```bash
 cd FogBus2/containers/actor
 docker pull cloudslab/fogbus2-actor
-docker-compose run \
+docker compose run \
                   --rm \
                   --name Actor \
                   fogbus2-actor \
@@ -386,7 +386,7 @@ cd FogBus2/containers/actor
 **step1**: Run Actor in a Docker container.
 ```bash
 docker pull cloudslab/fogbus2-actor
-docker-compose run \
+docker compose run \
                   --rm \
                   --name Actor \
                   fogbus2-actor \
@@ -410,7 +410,7 @@ cd FogBus2/containers/actor
 **step1**: Run Actor in a Docker container.
 ```bash
 docker pull cloudslab/fogbus2-actor
-docker-compose run \
+docker compose run \
                   --rm \
                   --name Actor \
                   fogbus2-actor \
@@ -424,7 +424,7 @@ docker-compose run \
 ```
 ```shell
 docker pull cloudslab/fogbus2-user
-docker-compose run \
+docker compose run \
                     --rm \
                     --name UserDiabetesPrediction \
                     -v $(pwd)/:/data \

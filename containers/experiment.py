@@ -47,7 +47,7 @@ class Experiment:
         self.logger.info('Starting RemoteLogger ...')
         os.system(
             'cd ./newLogger && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name RemoteLogger '
             'remote_logger '
@@ -62,7 +62,7 @@ class Experiment:
         self.logger.info('Starting Master ...')
         os.system(
             'cd ./newMaster && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name Master '
             'master '
@@ -86,7 +86,7 @@ class Experiment:
         self.logger.info('Starting Actor ...')
         os.system(
             'cd ./newActor && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name Actor '
             'Actor '
@@ -104,7 +104,7 @@ class Experiment:
         self.logger.info('Starting User ...')
         os.system(
             'cd ./newUser && '
-            'docker-compose run '
+            'docker compose run '
             '--rm '
             '--name User '
             'user '
