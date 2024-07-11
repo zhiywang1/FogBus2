@@ -22,7 +22,6 @@ class Actor:
             self,
             addr,
             masterAddr,
-            remoteLoggerAddr,
             logLevel=logging.DEBUG,
             containerName='',
             enableTLS: bool = False,
@@ -36,7 +35,6 @@ class Actor:
             addr=addr,
             logLevel=logLevel,
             masterAddr=masterAddr,
-            remoteLoggerAddr=remoteLoggerAddr,
             portRange=ConfigActor.portRange,
             enableTLS=enableTLS,
             certFile=certFile,
@@ -71,11 +69,6 @@ class Actor:
         self.currPath = os.path.abspath(os.path.curdir)
 
     def discoverIfUnset(self):
-        remoteLogger = self.basicComponent.remoteLogger
-        if remoteLogger.addr[0] == '' or remoteLogger.addr[1] == 0:
-            self.resourcesDiscovery.discoverAndCommunicate(
-                targetRole=ComponentRole.REMOTE_LOGGER,
-                isNotSetInArgs=True)
         master = self.basicComponent.master
         if master.addr[0] == '' or master.addr[1] == 0:
             self.resourcesDiscovery.discoverAndCommunicate(
@@ -100,7 +93,7 @@ class Actor:
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.HOST_RESOURCES,
             data=data,
-            destination=self.basicComponent.remoteLogger)
+            destination=self.basicComponent.master)
 
     def uploadImages(self):
 
@@ -112,7 +105,7 @@ class Actor:
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.CONTAINER_IMAGES_AND_RUNNING_CONTAINERS,
             data=data,
-            destination=self.basicComponent.remoteLogger)
+            destination=self.basicComponent.master)
 
     def register(self):
         self.basicComponent.debugLogger.info('Profiling...')
@@ -160,18 +153,6 @@ def parseArg():
         default=0,
         type=int,
         help='Master port')
-    parser.add_argument(
-        '--remoteLoggerIP',
-        metavar='RemoteLoggerIP',
-        type=str,
-        help='Remote logger ip.')
-    parser.add_argument(
-        '--remoteLoggerPort',
-        metavar='RemoteLoggerPort',
-        nargs='?',
-        default=0,
-        type=int,
-        help='Remote logger port')
     parser.add_argument(
         '--containerName',
         metavar='ContainerName',
@@ -230,7 +211,6 @@ if __name__ == '__main__':
     actor_ = Actor(
         addr=(args.bindIP, args.bindPort),
         masterAddr=(args.masterIP, args.masterPort),
-        remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         containerName=args.containerName,
         logLevel=args.verbose,
         enableTLS=args.enableTLS,

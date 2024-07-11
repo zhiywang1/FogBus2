@@ -21,7 +21,6 @@ class BasicComponent(Communicator, ABC):
             portRange: Tuple[int, int],
             logLevel: int,
             masterAddr: Address,
-            remoteLoggerAddr: Address,
             ignoreSocketError: bool = False,
             enableTLS: bool = False,
             certFile: str = '',
@@ -33,7 +32,6 @@ class BasicComponent(Communicator, ABC):
             addr=addr,
             logLevel=logLevel,
             masterAddr=masterAddr,
-            remoteLoggerAddr=remoteLoggerAddr,
             ignoreSocketError=ignoreSocketError,
             portRange=portRange,
             enableTLS=enableTLS,
@@ -86,7 +84,7 @@ class BasicComponent(Communicator, ABC):
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.MEDIAN_RECEIVED_PACKET_SIZE,
             data=data,
-            destination=self.remoteLogger)
+            destination=self.master)
 
     def uploadDelays(self):
         allDelays = self.delays.calculateAll()
@@ -97,4 +95,4 @@ class BasicComponent(Communicator, ABC):
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.DELAYS,
             data=data,
-            destination=self.remoteLogger)
+            destination=self.master)

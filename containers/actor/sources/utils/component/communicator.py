@@ -24,7 +24,6 @@ class Communicator(BasicMessageHandler, ABC):
             portRange: Tuple[int, int],
             logLevel: int,
             masterAddr: Address,
-            remoteLoggerAddr: Address,
             ignoreSocketError: bool = False,
             enableTLS: bool = False,
             certFile: str = '',
@@ -48,9 +47,6 @@ class Communicator(BasicMessageHandler, ABC):
         self.master = Component(
             role=ComponentRole.MASTER,
             addr=masterAddr)
-        self.remoteLogger = Component(
-            role=ComponentRole.REMOTE_LOGGER,
-            addr=remoteLoggerAddr)
         self.domainName = domainName
 
     def setName(

@@ -26,13 +26,10 @@ class ActorInitiator(BaseInitiator):
             self,
             me: Component,
             master: Component,
-            remoteLogger: Component,
             isContainerMode: bool):
         args = ' --bindIP %s' % me.addr[0] + \
                ' --masterIP %s' % master.addr[0] + \
                ' --masterPort %d' % master.addr[1] + \
-               ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-               ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
                ' --verbose %d' % self.basicComponent.debugLogger.level
         if not isContainerMode:
             self.initActorOnHost(args=args)

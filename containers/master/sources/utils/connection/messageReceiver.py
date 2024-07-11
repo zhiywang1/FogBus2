@@ -16,10 +16,9 @@ from time import sleep
 
 from .message import MessageReceived
 from .messageSender import FORMAT
-from .messageSender import MessageSender, Connection, Connections, receive_message
+from .messageSender import MessageSender, Connection, Connections, receive_message, MessageToSend
 from ..tools.terminate import terminate
-from ..types import Address
-from ..types import ComponentRole
+from ..types import Address, ComponentRole, MessageType, MessageSubType
 
 PAYLOAD_SIZE = calcsize(FORMAT)
 
@@ -122,6 +121,15 @@ class MessageReceiver(MessageSender):
                         socket_obj=client_socket,
                         addr=source_addr)
                 self.conns.release()
+                # forward log messages when role is MASTER
+                #  Due to security requirementsUser, actor and task executor do not see RemoteLogger
+                # they send logs to Master and Master forwards them to RemoteLogger.
+                # This will reduce the attack surface.
+                if (self.role == ComponentRole.MASTER and
+                        message.type == MessageType.LOG and
+                        message.type != MessageSubType.ALL_RESOURCES_PROFILES):
+                    self.sendMessage(messageToSend=MessageToSend.fromDict(content))
+                    continue
                 self.messagesReceivedQueue.put((message, packetSize))
                 i += 1
             except Exception:

@@ -25,7 +25,6 @@ class TaskExecutor:
             self,
             addr,
             masterAddr,
-            remoteLoggerAddr,
             userID: str,
             taskName: str,
             taskToken: str,
@@ -44,7 +43,6 @@ class TaskExecutor:
             role=ComponentRole.TASK_EXECUTOR,
             addr=addr,
             masterAddr=masterAddr,
-            remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
             portRange=ConfigTaskExecutor.portRange,
             enableTLS=enableTLS,
@@ -100,7 +98,7 @@ class TaskExecutor:
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.MEDIAN_PROCESSING_TIME,
             data=data,
-            destination=self.basicComponent.remoteLogger)
+            destination=self.basicComponent.master)
 
     def run(self):
         self.register()
@@ -151,16 +149,6 @@ def parseArg():
         metavar='MasterPort',
         type=int,
         help='Master port')
-    parser.add_argument(
-        '--remoteLoggerIP',
-        metavar='RemoteLoggerIP',
-        type=str,
-        help='Remote logger ip.')
-    parser.add_argument(
-        '--remoteLoggerPort',
-        metavar='RemoteLoggerPort',
-        type=int,
-        help='Remote logger port')
     parser.add_argument(
         '--userID',
         metavar='UserID',
@@ -259,7 +247,6 @@ if __name__ == '__main__':
         networkName=args.networkName,
         addr=(args.bindIP, args.bindPort),
         masterAddr=(args.masterIP, args.masterPort),
-        remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         userID=args.userID,
         taskName=args.taskName,
         taskToken=args.taskToken,

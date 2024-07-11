@@ -15,7 +15,6 @@ class MasterInitiator(BaseInitiator):
             self,
             me: ComponentIdentity,
             createdBy: ComponentIdentity,
-            remoteLogger: ComponentIdentity,
             message: MessageReceived,
             isContainerMode: bool):
         data = message.data
@@ -25,8 +24,6 @@ class MasterInitiator(BaseInitiator):
         # try to create a Master
 
         args = ' --bindIP %s' % me.addr[0] + \
-               ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-               ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
                ' --schedulerName %s' % schedulerName + \
                ' --createdByIP %s' % createdBy.addr[0] + \
                ' --createdByPort %d' % createdBy.addr[1] + \

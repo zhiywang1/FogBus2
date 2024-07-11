@@ -12,13 +12,12 @@ info () {
 
 # Function to display help message
 usage() {
-    echo "Usage: $0 [-h hostname] [-r RemoteLogger hostname]  [-m Master hostname] [-t enable TLS or not] [-c in container or not] [-o enable overlay or not] [-e extended application arguments] [-w show window or not]"
+    echo "Usage: $0 [-h hostname] [-m Master hostname] [-t enable TLS or not] [-c in container or not] [-o enable overlay or not] [-e extended application arguments] [-w show window or not]"
     exit 1
 }
 
 # Initialize variables
 hostname=""
-remote_logger_hostname=""
 master_hostname=""
 enable_tls=0
 in_container=0
@@ -27,13 +26,10 @@ extendedAppArgs=""
 show_window=0
 
 # Parse options using getopts
-while getopts ":h:r:m:e:tcow" opt; do
+while getopts ":h:m:e:tcow" opt; do
     case ${opt} in
         h )
             hostname=$OPTARG
-            ;;
-        r )
-            remote_logger_hostname=$OPTARG
             ;;
         m )
             master_hostname=$OPTARG
@@ -72,13 +68,8 @@ if [ -z "$hostname" ]; then
       echo "[!] Hostname or enable overlay is required."
       usage
     else
-      if [ -z "$remote_logger_hostname" ]; then
-        echo "[!] RemoteLogger Hostname is required when overlay is enabled."
-        exit 1
-      else
-        hostname="Actor"
-        master_hostname="Master"
-      fi
+      hostname="Actor"
+      master_hostname="Master"
     fi
   else
     if [ -z "$enable_overlay" ]; then
@@ -87,10 +78,6 @@ if [ -z "$hostname" ]; then
       echo "[!] Cannot use hostname when overlay is enabled."
       usage
     fi
-fi
-
-if [ -z "$remote_logger_hostname" ]; then
-    remote_logger_hostname=$hostname
 fi
 
 if [ -z "$master_hostname" ]; then
@@ -105,10 +92,10 @@ command_base="cd sources && python user.py"
 docker_command_base="docker run"
 docker_args=" --rm --name User -v ./highway-traffic.mp4:/highway-traffic.mp4 -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 50101:50101 cloudslab/fogbus2-user:1.0"
 docker_overlay_args=" --network=fogbus2"
-set_user_remoteLogger_master () {
-  args=" --bindIP $1 --bindPort 50101 --remoteLoggerIP $2 --remoteLoggerPort 5000 --masterIP $3 --masterPort 5001 --domainName fogbus2 --certFile server.crt --keyFile server.key"
+set_user_master () {
+  args=" --bindIP $1 --bindPort 50101 --masterIP $2 --masterPort 5001 --domainName fogbus2 --certFile server.crt --keyFile server.key"
 }
-set_user_remoteLogger_master $hostname $remote_logger_hostname $master_hostname
+set_user_master $hostname $master_hostname
 tls_args=" --enableTLS True"
 container_args=" --containerName User"
 window_args=" --windowHeight 640"
@@ -128,7 +115,7 @@ if [ $enable_tls -eq 0 ]; then
   if [ $in_container -eq 1 ]; then
     if [ $enable_overlay -eq 1 ]; then
       # Command of running User in container with overlay
-      set_user_remoteLogger_master "User" $remote_logger_hostname "Master"
+      set_user_master "User" "Master"
       command="$docker_command_base $docker_overlay_args $docker_args $args $container_args"
     else
       # Command of running User in container
@@ -149,7 +136,7 @@ else
     # In container is set
     if [ $enable_overlay -eq 1 ]; then
       # Command of running User in container with TLS and overlay
-      set_user_remoteLogger_master "User" $remote_logger_hostname "Master"
+      set_user_master "User" "Master"
       command="$docker_command_base $docker_overlay_args $docker_args $args $tls_args $container_args"
     else
       # Command of running User in container with TLS

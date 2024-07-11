@@ -50,6 +50,7 @@ class BasicMessageHandler(MessageReceiver, ABC):
             try:
                 message, packetSize = self.messagesReceivedQueue.get()
                 message.receivedAtLocalTimestamp = time() * 1000
+
                 if message.typeIs(MessageType.PROFILING,
                                   MessageSubType.TIME_DIFFERENCE):
                     self.handleTimeDiff(message)

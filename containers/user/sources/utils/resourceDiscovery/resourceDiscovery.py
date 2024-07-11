@@ -7,7 +7,6 @@ from .discovered import DiscoveredManager
 from ..component import BasicComponent
 from ..config import ConfigActor
 from ..config import ConfigMaster
-from ..config import ConfigRemoteLogger
 from ..config import ConfigTaskExecutor
 from ..config import ConfigUser
 from ..connection.message.received import MessageReceived
@@ -34,14 +33,10 @@ class ResourcesDiscovery:
         self.neighboursIP = self.generateNeighboursIP()
         # TODO: implement event listening feature
         #  Thread can be terminated when listening event happens
-        self.remoteLoggerDiscovered: Event = Event()
         self.masterDiscovered: Event = Event()
         self.actorDiscovered: Event = Event()
 
     def checkPorts(self):
-        self.checkPortOfRole(
-            component=self.basicComponent.remoteLogger,
-            portRange=ConfigRemoteLogger.portRange)
         self.checkPortOfRole(
             component=self.basicComponent.master,
             portRange=ConfigMaster.portRange)
@@ -77,9 +72,7 @@ class ResourcesDiscovery:
                 '%s is not set in args, will discover', targetRole.value)
         self.basicComponent.handleMessage = self.handleMessage
         self.discoverComponent(role=targetRole, block=True, showLog=True)
-        if targetRole == ComponentRole.REMOTE_LOGGER:
-            discovered = self.discovered.remoteLoggers
-        elif targetRole == ComponentRole.MASTER:
+        if targetRole == ComponentRole.MASTER:
             discovered = self.discovered.masters
         else:
             self.basicComponent.debugLogger.error(
@@ -91,13 +84,8 @@ class ResourcesDiscovery:
             hostID='HostID',
             role=targetRole,
             addr=addr)
-        if targetRole == ComponentRole.REMOTE_LOGGER:
-            self.basicComponent.remoteLogger = component
-        elif targetRole == ComponentRole.MASTER:
+        if targetRole == ComponentRole.MASTER:
             self.basicComponent.master = component
-
-    def discoverRemoteLoggers(self):
-        self.discoverComponent(role=ComponentRole.REMOTE_LOGGER, sleepTime=1)
 
     def discoverMasters(self):
         self.discoverComponent(role=ComponentRole.MASTER, sleepTime=1)
@@ -117,9 +105,6 @@ class ResourcesDiscovery:
         elif role == ComponentRole.MASTER:
             discovered = self.discovered.masters
             event = self.masterDiscovered
-        elif role == ComponentRole.REMOTE_LOGGER:
-            discovered = self.discovered.remoteLoggers
-            event = self.remoteLoggerDiscovered
         else:
             return
         event.clear()
@@ -186,12 +171,7 @@ class ResourcesDiscovery:
         data = message.data
         role = data['role']
         addr = message.source.addr
-        if role == ComponentRole.REMOTE_LOGGER.value:
-            self.remoteLoggerDiscovered.set()
-            if addr in self.discovered.remoteLoggers:
-                return
-            self.discovered.remoteLoggers.add(addr)
-        elif role == ComponentRole.MASTER.value:
+        if role == ComponentRole.MASTER.value:
             self.masterDiscovered.set()
             if addr in self.discovered.masters:
                 return
@@ -204,7 +184,6 @@ class ResourcesDiscovery:
         return
 
     def clearDiscovered(self):
-        self.discovered.remoteLoggers = set()
         self.discovered.masters = set()
         self.discovered.actors = set()
 

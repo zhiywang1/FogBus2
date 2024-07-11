@@ -60,7 +60,6 @@ class TaskExecutorInitiator(BaseInitiator):
         baseTaskName, label = self.covertTaskName(taskName)
         actor = self.basicComponent.me
         master = self.basicComponent.master
-        remoteLogger = self.basicComponent.remoteLogger
         childTaskTokens = self.serialize(childTaskTokens)
         args = ''
         args += ' --domainName %s' % self.basicComponent.domainName
@@ -78,8 +77,6 @@ class TaskExecutorInitiator(BaseInitiator):
             args += ' --bindIP %s' % actor.addr[0] + \
                     ' --masterIP %s' % master.addr[0] + \
                     ' --masterPort %d' % master.addr[1] + \
-                    ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-                    ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
                     ' --userID %s' % userID + \
                     ' --taskName %s' % baseTaskName + \
                     ' --taskToken %s' % taskToken + \
@@ -101,8 +98,6 @@ class TaskExecutorInitiator(BaseInitiator):
         args += ' --bindIP %s' % containerName + \
                 ' --masterIP %s' % master.addr[0] + \
                 ' --masterPort %d' % master.addr[1] + \
-                ' --remoteLoggerIP %s' % remoteLogger.addr[0] + \
-                ' --remoteLoggerPort %d' % remoteLogger.addr[1] + \
                 ' --userID %s' % userID + \
                 ' --taskName %s' % baseTaskName + \
                 ' --taskToken %s' % taskToken + \

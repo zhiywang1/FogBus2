@@ -25,7 +25,6 @@ class User:
             self,
             addr: Address,
             masterAddr: Address,
-            remoteLoggerAddr: Address,
             appName: str,
             windowHeight: int,
             videoPath: str,
@@ -41,7 +40,6 @@ class User:
             role=ComponentRole.USER,
             addr=addr,
             masterAddr=masterAddr,
-            remoteLoggerAddr=remoteLoggerAddr,
             logLevel=logLevel,
             portRange=ConfigUser.portRange,
             enableTLS=enableTLS,
@@ -82,11 +80,6 @@ class User:
             periodicTasks=periodicTasks)
 
     def discoverIfUnset(self):
-        remoteLogger = self.basicComponent.remoteLogger
-        if remoteLogger.addr[0] == '' or remoteLogger.addr[1] == 0:
-            self.resourcesDiscovery.discoverAndCommunicate(
-                targetRole=ComponentRole.REMOTE_LOGGER,
-                isNotSetInArgs=True)
         master = self.basicComponent.master
         if master.addr[0] == '' or master.addr[1] == 0:
             self.resourcesDiscovery.discoverAndCommunicate(
@@ -121,7 +114,7 @@ class User:
             messageType=MessageType.LOG,
             messageSubType=MessageSubType.RESPONSE_TIME,
             data=data,
-            destination=self.basicComponent.remoteLogger)
+            destination=self.basicComponent.master)
 
     def preparePeriodTasks(self) -> PeriodicTasks:
         periodicTasks = [(self.uploadMedianResponseTime, 10)]
@@ -155,18 +148,6 @@ def parseArg():
         default=0,
         type=int,
         help='Master port')
-    parser.add_argument(
-        '--remoteLoggerIP',
-        metavar='RemoteLoggerIP',
-        type=str,
-        help='Remote logger ip.')
-    parser.add_argument(
-        '--remoteLoggerPort',
-        metavar='RemoteLoggerPort',
-        nargs='?',
-        default=0,
-        type=int,
-        help='Remote logger port')
     parser.add_argument(
         '--applicationName',
         metavar='ApplicationName',
@@ -253,7 +234,6 @@ if __name__ == "__main__":
         containerName=args.containerName,
         addr=(args.bindIP, args.bindPort),
         masterAddr=(args.masterIP, args.masterPort),
-        remoteLoggerAddr=(args.remoteLoggerIP, args.remoteLoggerPort),
         appName=args.applicationName,
         logLevel=args.verbose,
         enableTLS=args.enableTLS,

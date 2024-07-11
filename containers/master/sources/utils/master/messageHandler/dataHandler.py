@@ -53,6 +53,8 @@ class DataHandler:
         source = message.source
         data = message.data
         componentID = source.componentID
+        if componentID not in self.registry.registeredManager.taskExecutors:
+            return
         taskExecutor = self.registry.registeredManager.taskExecutors[
             componentID]
         userID = taskExecutor.userID

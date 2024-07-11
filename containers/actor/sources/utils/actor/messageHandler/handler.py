@@ -161,11 +161,9 @@ class ActorMessageHandler:
             self.basicComponent.debugLogger.info(
                 'Cannot create another actor for %s' % str(message.source.addr))
             return
-        source = message.source
         self.initiator.initMaster(
             me=self.basicComponent.me,
-            remoteLogger=self.basicComponent.remoteLogger,
-            createdBy=source,
+            createdBy=message.source,
             message=message,
             isContainerMode=self.containerManager.isContainerMode)
         return
@@ -179,7 +177,6 @@ class ActorMessageHandler:
         source = message.source
         self.initiator.initActor(
             me=self.basicComponent.me,
-            remoteLogger=self.basicComponent.remoteLogger,
             master=source,
             isContainerMode=self.containerManager.isContainerMode)
         return

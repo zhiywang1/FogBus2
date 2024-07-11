@@ -2,7 +2,6 @@ from .component import BasicComponent
 from .component import PeriodicTaskRunner
 from .config import ConfigActor
 from .config import ConfigMaster
-from .config import ConfigRemoteLogger
 from .config import ConfigTaskExecutor
 from .config import ConfigUser
 from .connection import BasicMessageHandler
@@ -15,7 +14,6 @@ from .container import ContainerManager
 from .debugLogPrinter import DebugLogPrinter
 from .resourceDiscovery import DiscoveredActors
 from .resourceDiscovery import DiscoveredMasters
-from .resourceDiscovery import DiscoveredRemoteLoggers
 from .resourceDiscovery import ResourcesDiscovery
 from .tools import camelToSnake
 from .tools import decrypt

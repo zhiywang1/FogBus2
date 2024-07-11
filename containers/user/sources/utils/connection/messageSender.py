@@ -224,10 +224,6 @@ class MessageSender(Component, DebugLogPrinter):
                 messageSubSubType=messageSubSubType)
         messageToSend.sentAtSourceTimestamp = time() * 1000
 
-        destination = messageToSend.destination
-        component = Component.fromDict(destination.toDict())
-        messageToSend.destination = component
-
         self.messagesToSendQueue.put(
             (messageToSend, ignoreSocketError, showFailure))
 
