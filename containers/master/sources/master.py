@@ -163,14 +163,14 @@ class Master:
              self.parsedArgs.profileDataRatePeriod),
             (self.uploadLatency, 30),
             (self.updateResources, 30),
-            (self.profiler.loggerManager.saveAll, 1800),
-            (self.profiler.loggerManager.retrieveAll, 1900),
-            (self.uploadProfiles, 2000),
-            (self.requestProfiler, 2100),
+            (self.profiler.loggerManager.saveAll, 320),
+            (self.profiler.loggerManager.retrieveAll, 330),
+            (self.uploadProfiles, 250),
+            (self.requestProfiler, 300),
             # (self.resourcesDiscovery.discoverMasters, 3600 * 3),
             # (self.resourcesDiscovery.discoverActors, 3600 * 3),
             # (self.resourcesDiscovery.getActorAddrFromOtherMasters, 3200),
-            (self.resourcesDiscovery.advertiseMeToActors, 3300)]
+            (self.resourcesDiscovery.advertiseMeToActors, 12 * 3600)]
         return periodicTasks
 
     def uploadDataRate(self):
@@ -294,7 +294,7 @@ def parseArg():
         '--profileDataRatePeriod',
         metavar='ProfileDataRatePeriod',
         nargs='?',
-        default=24 * 3600,
+        default=5 * 60,
         type=int,
         help='Period for Master to profile data rate and latency. In seconds. '
              'Set to 0 to disable')
