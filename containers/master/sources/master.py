@@ -100,7 +100,7 @@ class Master:
             profiler=self.profiler,
             waitTimeout=waitTimeout,
             networkController=self.networkController,
-            is_container_mode=self.containerManager.isContainerMode,
+            container_name=self.containerManager.containerName,
             enableOverlay=self.containerManager.enableOverlay)
         self.resourcesDiscovery = MasterResourcesDiscovery(
             registry=self.registry,
@@ -217,8 +217,8 @@ def parseArg():
     parser = argparse.ArgumentParser(
         description='Master')
     parser.add_argument(
-        '--bindIP',
-        metavar='BindIP',
+        '--advertiseIP',
+        metavar='advertiseIP',
         type=str,
         help='Master ip.')
     parser.add_argument(
@@ -355,8 +355,8 @@ if __name__ == '__main__':
     args_ = parseArg()
     master_ = Master(
         containerName=args_.containerName,
-        addr=(args_.bindIP, args_.bindPort),
-        masterAddr=(args_.bindIP, args_.bindPort),
+        addr=(args_.advertiseIP, args_.bindPort),
+        masterAddr=(args_.advertiseIP, args_.bindPort),
         remoteLoggerAddr=(args_.remoteLoggerIP, args_.remoteLoggerPort),
         schedulerName=args_.schedulerName,
         createdByIP=args_.createdByIP,

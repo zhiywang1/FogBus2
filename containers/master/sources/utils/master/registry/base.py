@@ -49,7 +49,7 @@ class Registry(ABC):
             scheduler: BaseScheduler,
             systemPerformance: AllSystemPerformance,
             profiler: MasterProfiler,
-            is_container_mode: bool,
+            container_name: str,
             waitTimeout: int = 0,
             networkController: NetworkController = None,
             enableOverlay: bool = False):
@@ -78,7 +78,8 @@ class Registry(ABC):
 
         self.networkController = networkController
         self.singer = Singer(self.basicComponent.key_file)
-        self.is_container_mode = is_container_mode
+        self.is_container_mode = True if len(container_name) else False
+        self.container_name = container_name
         self.enableOverlay = enableOverlay
 
     def registerClient(self,
@@ -234,8 +235,8 @@ class Registry(ABC):
                 return
             if self.is_container_mode and self.enableOverlay:
                 network = self.networkController.create_network_for_request(user.nameConsistent)
-                self.networkController.connect_container_to_network('Master', network.name)
-                self.debugLogger.info('Master joined network %s', network.name)
+                self.networkController.connect_container_to_network(self.container_name, network.name)
+                self.debugLogger.info(f'{self.container_name} joined network {network.name}')
             self.checkTaskExecutorForUser(user=user)
         except Exception as e:
             print_exc()

@@ -41,6 +41,7 @@ toggle_hosts() {
 
 # Initialize variables
 hostname=""
+default_port=5001
 remote_logger_hostname=""
 enable_tls=0
 in_container=0
@@ -82,24 +83,8 @@ shift $((OPTIND -1))
 
 # Check if hostname is set
 if [ -z "$hostname" ]; then
-    if [ -z "$enable_overlay" ]; then
-      echo "[!] Hostname or enable overlay is required."
-      usage
-    else
-      if [ -z "$remote_logger_hostname" ]; then
-        echo "[!] RemoteLogger Hostname is required when overlay is enabled."
-        exit 1
-      else
-        hostname="Master"
-      fi
-    fi
-  else
-    if [ -z "$enable_overlay" ]; then
-      enable_overlay=0
-    else
-      echo "[!] Cannot use hostname when overlay is enabled."
-      usage
-    fi
+  echo "[!] Hostname or enable overlay is required."
+  usage
 fi
 
 if [ -z "$remote_logger_hostname" ]; then
@@ -108,15 +93,12 @@ fi
 
 command_base="cd sources && python master.py"
 docker_command_base="docker run"
-docker_args=" --rm --name Master -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p 5001:5001 cloudslab/fogbus2-master:1.0"
+container_name="Master_${hostname}_$default_port"
+docker_args=" --rm --name $container_name -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p $default_port:$default_port cloudslab/fogbus2-master:1.0"
 docker_overlay_args=" --network=fogbus2"
-set_master_remoteLogger () {
-  args=" --bindIP $1 --bindPort 5001 --remoteLoggerIP $2 --remoteLoggerPort 5000 --domainName fogbus2 --certFile server.crt --keyFile server.key"
-}
-
-set_master_remoteLogger $hostname $remote_logger_hostname
+args=" --advertiseIP $hostname --bindPort $default_port --remoteLoggerIP $remote_logger_hostname --remoteLoggerPort 5000 --domainName fogbus2 --certFile server.crt --keyFile server.key"
 tls_args=" --enableTLS True"
-container_args=" --containerName Master"
+container_args=" --containerName $container_name"
 overlay_args=" --enableOverlay True"
 
 # Display parsed arguments
@@ -128,47 +110,31 @@ echo "[*] Enable overlay: $enable_overlay"
 echo "[*] Running Master..."
 echo "[====================================]"
 
-# Parse command
-if [ $enable_tls -eq 0 ]; then
-  # Enable TLS is not set
-  if [ $in_container -eq 1 ]; then
-      # Running Master in container
-      if [ $enable_overlay -eq 1 ]; then
-        # Command of running Master in container with overlay
-        set_master_remoteLogger "Master" $remote_logger_hostname
-        command="$docker_command_base $docker_overlay_args $docker_args $args $container_args $overlay_args"
-      else
-        # Command of running Master in container
-        command="$docker_command_base $docker_args $args $container_args"
-      fi
-  else
-      # Command of running Master
-      command="$command_base $args"
-  fi
-else
-  # Enable TLS is set
-  if [ $in_container -eq 1 ]; then
-    # In container is set
-    if [ $enable_overlay -eq 1 ]; then
-      # Command of running Master in container with TLS and overlay
-      set_master_remoteLogger "Master" $remote_logger_hostname
-      command="$docker_command_base $docker_overlay_args $docker_args $args $tls_args $container_args $overlay_args"
-    else
-      # Command of running Master in container with TLS
-      command="$docker_command_base $docker_args $args $tls_args $container_args"
-    fi
-  else
-    # In container is not set
-    # Command of running Master with TLS
-    command="$command_base $args $tls_args"
-  fi
-fi
-
 # Set DB hostname
 if [ $in_container -eq 1 ]; then
     toggle_hosts 1
 else
     toggle_hosts 0
+fi
+
+# Parse command
+if [ $in_container -eq 0 ]; then
+  ## not enable container
+  command="$command_base $args"
+else
+  ## enable container
+  if [ $enable_overlay -eq 0  ]; then
+    ## not enable overlay
+    command="$docker_command_base $docker_args $args $container_args"
+  else
+    ## enable overlay
+    command="$docker_command_base $docker_overlay_args $docker_args $args $container_args $overlay_args"
+  fi
+fi
+
+## enable tls
+if [ $enable_tls -eq 1 ]; then
+  command="$command $tls_args"
 fi
 
 info "$command"

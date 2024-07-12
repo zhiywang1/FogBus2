@@ -132,8 +132,13 @@ class MessageReceiver(MessageSender):
                     continue
                 self.messagesReceivedQueue.put((message, packetSize))
                 i += 1
+            except ssl.SSLError:
+                self.debugLogger.error(f'Received invalid TLS connection from {clientAddress}')
+                client_socket.close()
+                continue
             except Exception:
                 print_exc()
+                continue
 
     def tryListeningOn(self,
                        addr: Address,
