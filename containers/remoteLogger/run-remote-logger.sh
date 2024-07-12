@@ -1,5 +1,7 @@
 #/bin/bash
 
+set -e
+
 info () {
   echo "[*] Use parsed command"
   formatted_command=$(echo "$1" | sed -e 's/ -/ \r\n  -/g')
@@ -17,12 +19,7 @@ usage() {
 toggle_hosts() {
     local mode=$1
 
-    if [[ "$mode" != "0" && "$mode" != "1" ]]; then
-        echo "Usage: toggle_hosts <0|1>"
-        return 1
-    fi
-
-    if [[ "$mode" == "0" ]]; then
+    if [ $mode -eq 0 ]; then
         HOST_VALUE="$out_container_db_host"
         HOST1_VALUE="$in_container_db_host"
     else
