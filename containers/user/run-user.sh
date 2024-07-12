@@ -154,6 +154,6 @@ else
   fi
 fi
 
-command+=" $extendedAppArgs"
+command="$command $extendedAppArgs"
 info "$command"
 eval $command
