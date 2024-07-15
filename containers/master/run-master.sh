@@ -94,7 +94,7 @@ fi
 command_base="cd sources && python master.py"
 docker_command_base="docker run"
 container_name="Master_${hostname}_$default_port"
-docker_args=" --rm --name $container_name -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p $default_port:$default_port cloudslab/fogbus2-master:1.0"
+docker_args=" --rm --name $container_name -v ./sources:/workplace -v /var/run/docker.sock:/var/run/docker.sock -p $default_port:$default_port -p 60000:60000 cloudslab/fogbus2-master:1.0"
 docker_overlay_args=" --network=fogbus2"
 args=" --advertiseIP $hostname --bindPort $default_port --remoteLoggerIP $remote_logger_hostname --remoteLoggerPort 5000 --domainName fogbus2 --certFile server.crt --keyFile server.key"
 tls_args=" --enableTLS True"
