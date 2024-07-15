@@ -205,7 +205,7 @@ class ActorMessageHandler:
             sourceHostID: str):
         self._runningIperfServer.acquire()
         server = NetProfServer()
-        server.bind_address = self.basicComponent.addr[0]
+        server.bind_address = '0.0.0.0'
         server.port = 60000
         while True:
             try:
