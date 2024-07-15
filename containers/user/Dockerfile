@@ -1,5 +1,5 @@
 # Base
-FROM python:3.9-slim as base
+FROM python:3.9-slim AS base
 
 WORKDIR /workplace
 RUN apt update

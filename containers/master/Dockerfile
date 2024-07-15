@@ -1,7 +1,7 @@
 # Base
-FROM python:3.9-slim as base
+FROM python:3.9-slim AS base
 
-FROM base as pythonlibs
+FROM base AS pythonlibs
 
 ## Python libraries
 RUN apt update
