@@ -20,7 +20,7 @@ master_hostname=""
 default_master_port=5001
 enable_tls=0
 in_container=0
-enable_overlay=""
+enable_overlay=0
 
 # Parse options using getopts
 while getopts ":h:m:tco" opt; do
@@ -54,12 +54,10 @@ done
 shift $((OPTIND -1))
 
 # Check if hostname is set
-if [ -z "$enable_overlay" ]; then
+if [ $enable_overlay -eq 0 ]; then
     if [ -z "$hostname" ]; then
       echo "[!] hostname is required."
       usage
-    else
-      enable_overlay=0
     fi
   else
     if [ -z "$hostname" ]; then

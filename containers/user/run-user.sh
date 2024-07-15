@@ -21,7 +21,7 @@ hostname=""
 master_hostname=""
 enable_tls=0
 in_container=0
-enable_overlay=""
+enable_overlay=0
 extendedAppArgs=""
 show_window=0
 
@@ -64,7 +64,7 @@ shift $((OPTIND -1))
 
 # Check if hostname is set
 if [ -z "$hostname" ]; then
-    if [ -z "$enable_overlay" ]; then
+    if [ $enable_overlay -eq 0 ]; then
       echo "[!] Hostname or enable overlay is required."
       usage
     else
@@ -72,7 +72,7 @@ if [ -z "$hostname" ]; then
       master_hostname="Master"
     fi
   else
-    if [ -z "$enable_overlay" ]; then
+    if [ $enable_overlay -eq 0 ]; then
       enable_overlay=0
     else
       echo "[!] Cannot use hostname when overlay is enabled."
