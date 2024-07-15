@@ -22,7 +22,7 @@ class TaskExecutorImageBuilder:
             dockerHubUsername: str = '',
             push: bool = False) -> int:
         # get the parentfolder name
-        parentFolder = os.path.abspath(os.path.join(self.dockerFilesFolder, '..'))
+        parentFolder = os.path.abspath(os.path.join(self.dockerFilesFolder, '.'))
         old_folders = os.listdir(self.dockerFilesFolder)
         all_folders = []
         for folder in old_folders:

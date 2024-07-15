@@ -52,6 +52,8 @@ class DataRateProfiler:
         count = 1
         total = len(components) * len(components)
         for source in components:
+            #TODO: skip profiling temporarily
+            continue
             for target in components:
                 sleep(1)
                 self.basicComponent.debugLogger.debug('%d/%d', count, total)

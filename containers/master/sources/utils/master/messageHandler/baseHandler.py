@@ -128,7 +128,6 @@ class MasterMessageHandler:
         elif message.typeIs(
                 messageSubType=MessageSubType.DATA_RATE_TEST,
                 messageSubSubType=MessageSubSubType.SEND):
-
             return self.profilingHandler.handleDataRateSend(message)
         elif message.typeIs(
                 messageSubType=MessageSubType.DATA_RATE_TEST,
