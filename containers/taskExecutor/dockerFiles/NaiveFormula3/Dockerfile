@@ -1,5 +1,5 @@
 # Base
-FROM python:3.9-slim AS base
+FROM python:3.10-slim AS base
 
 FROM base AS pythonlibs
 RUN apt update
