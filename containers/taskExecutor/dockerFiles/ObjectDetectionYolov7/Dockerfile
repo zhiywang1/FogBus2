@@ -13,7 +13,7 @@ RUN pip install --prefix=/install opencv-python==4.9.0.80
 COPY ./sources/requirements.txt  /tmp/requirements.txt
 RUN pip install --prefix=/install -r /tmp/requirements.txt
 COPY ./sources/utils/taskExecutor/tasks/yolov7/requirements.txt /tmp/requirements.txt
-RUN pip install -r /tmp/requirements.txt
+RUN pip install --prefix=/install -r /tmp/requirements.txt
 
 # Copy files
 FROM base AS oslibs
