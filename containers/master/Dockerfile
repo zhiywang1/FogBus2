@@ -12,7 +12,7 @@ COPY ./sources/requirements.txt /tmp/requirements.txt
 RUN python -m pip install --prefix=/install  -r /tmp/requirements.txt
 
 # Copy files
-FROM base as oslibs
+FROM base AS oslibs
 RUN apt update
 RUN apt install -y iperf3
 
