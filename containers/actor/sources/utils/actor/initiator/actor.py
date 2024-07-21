@@ -5,7 +5,7 @@ from docker.client import DockerClient
 from docker.errors import APIError
 from .base import BaseInitiator
 from ...component.basic import BasicComponent
-from ...tools import filterIllegalCharacter,encrypt
+from ...tools import filterIllegalCharacter
 from ...types import Component
 
 

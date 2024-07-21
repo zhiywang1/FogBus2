@@ -18,8 +18,6 @@ from .resourceDiscovery import DiscoveredMasters
 from .resourceDiscovery import DiscoveredRemoteLoggers
 from .resourceDiscovery import ResourcesDiscovery
 from .tools import camelToSnake
-from .tools import decrypt
-from .tools import encrypt
 from .tools import filterIllegalCharacter
 from .tools import newDebugLogger
 from .tools import snakeToCamel

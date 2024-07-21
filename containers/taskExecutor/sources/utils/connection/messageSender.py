@@ -1,7 +1,7 @@
-import struct
 import ssl
 import socket
 import threading
+from pickle import dumps, loads
 from abc import abstractmethod
 from threading import Lock
 from queue import Queue
@@ -12,13 +12,9 @@ from time import time, sleep
 from traceback import print_exc
 from typing import Dict
 from typing import Tuple
-from struct import calcsize
-from struct import unpack
 
 from .message import MessageToSend
 from ..debugLogPrinter import DebugLogPrinter
-from ..tools import encrypt, decrypt
-from ..tools import terminate
 from ..types import Address
 from ..types import Component
 from ..types import ComponentRole
@@ -28,27 +24,43 @@ from ..types import MessageType
 
 from .message import MessageReceived
 
-FORMAT = '>L'
-PAYLOAD_SIZE = calcsize(FORMAT)
+SEP = b','
 
 
-def receive_message(clientSocket: socket):
-    buffer = b''
-    while len(buffer) < PAYLOAD_SIZE:
-        t = clientSocket.recv(4096)
-        if not t:
+def send_message(s: socket, messageInDict: dict):
+    messageInBytes = dumps(messageInDict)
+    msg_len = len(messageInBytes)
+    messageInBytes = msg_len.to_bytes(4, byteorder='big') + b',' + messageInBytes
+    s.sendall(messageInBytes)
+
+
+def receive_message(buffer, clientSocket: socket):
+    while len(buffer) < 5:
+        ret = clientSocket.recv(4096)
+        if not ret:
             raise Exception('Received empty data')
-        buffer += t
-        if t[-1] == b'$':
-            buffer = buffer[:-1]
+        buffer += ret
+    msg_len = int.from_bytes(buffer[:4], byteorder='big')
+    m = buffer[5:]
+
+    if len(m) >= msg_len:
+        messageInDict = loads(m[:msg_len])
+        return messageInDict, msg_len, m[msg_len:]
+
+    remaining = msg_len - len(m)
+    buffer = b''
+    while remaining > 0:
+        ret = clientSocket.recv(4096)
+        if not ret:
+            raise Exception('Received empty data')
+        if len(ret) > remaining:
+            m += ret[:remaining]
+            buffer = ret[remaining:]
             break
-    packedDataSize = buffer[:PAYLOAD_SIZE]
-    buffer = buffer[PAYLOAD_SIZE:]
-    dataSize = unpack(FORMAT, packedDataSize)[0]
-    while len(buffer) < dataSize:
-        buffer += clientSocket.recv(4096)
-    data = buffer[:dataSize]
-    return decrypt(data), len(data)
+        m += ret
+        remaining -= len(ret)
+    messageInDict = loads(m)
+    return messageInDict, msg_len, buffer
 
 
 class Connection:
@@ -56,12 +68,14 @@ class Connection:
                  tls_enabled,
                  recv_queue,
                  send_queue,
+                 buffer,
                  addr=None,
                  socket_obj=None,
                  max_retries=10,
                  retry_delay=1):
         self.tls_enabled = tls_enabled
         self.is_proactive = socket_obj is None
+        self.buffer = buffer
         self.addr = addr
         self.socket = socket_obj
         self.recv_queue = recv_queue
@@ -102,31 +116,24 @@ class Connection:
     def _recv_task(self):
         while True:
             try:
-                content, packetSize = receive_message(self.socket)
+                content, packetSize, buffer = receive_message(self.buffer, self.socket)
+                self.buffer = buffer
                 if content:
                     message = MessageReceived.fromDict(content)
                     self.recv_queue.put((message, packetSize))
                 else:
                     self._handle_socket_error("Connection closed by the server")
-                    break
             except Exception as e:
-                self._handle_socket_error(f"Receive error: {e}")
-                break
+                raise Exception(f"Receive error: {e}")
 
     def _send_task(self):
         while True:
             messageInDict = self.send_queue.get()
-            messageInBytes = encrypt(messageInDict)
-            package = struct.pack(FORMAT, len(messageInBytes)) + messageInBytes
-            try:
-                self.socket.sendall(package)
-            except Exception as e:
-                self._handle_socket_error(f"Send error: {e}", messageInDict)
-                break
+            send_message(self.socket, messageInDict)
 
     def _handle_socket_error(self,
                              message,
-                             send_data=None):
+                             send_data='socket connection closed without message'):
         self.socket.close()
         if self.is_proactive:
             self._connect_with_retries()
@@ -224,6 +231,10 @@ class MessageSender(Component, DebugLogPrinter):
                 messageSubSubType=messageSubSubType)
         messageToSend.sentAtSourceTimestamp = time() * 1000
 
+        destination = messageToSend.destination
+        component = Component.fromDict(destination.toDict())
+        messageToSend.destination = component
+
         self.messagesToSendQueue.put(
             (messageToSend, ignoreSocketError, showFailure))
 
@@ -242,10 +253,12 @@ class MessageSender(Component, DebugLogPrinter):
                 dest_addr = messageToSend.destination.addr
                 self.conns.acquire()
                 if dest_addr not in self.conns:
-                    conn = Connection(tls_enabled=self.tls_enabled,
-                                      recv_queue=self.messagesReceivedQueue,
-                                      send_queue=Queue(),
-                                      addr=dest_addr)
+                    conn = Connection(
+                        buffer=b'',
+                        tls_enabled=self.tls_enabled,
+                        recv_queue=self.messagesReceivedQueue,
+                        send_queue=Queue(),
+                        addr=dest_addr)
                     self.conns[dest_addr] = conn
                 else:
                     conn = self.conns[dest_addr]

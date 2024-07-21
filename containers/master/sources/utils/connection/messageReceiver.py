@@ -7,7 +7,6 @@ from socket import SO_REUSEADDR
 from socket import SOCK_STREAM
 from socket import socket
 from socket import SOL_SOCKET
-from struct import calcsize
 from threading import Event
 from threading import Thread
 from traceback import print_exc
@@ -15,12 +14,9 @@ from typing import Tuple
 from time import sleep
 
 from .message import MessageReceived
-from .messageSender import FORMAT
 from .messageSender import MessageSender, Connection, Connections, receive_message, MessageToSend
 from ..tools.terminate import terminate
 from ..types import Address, ComponentRole, MessageType, MessageSubType
-
-PAYLOAD_SIZE = calcsize(FORMAT)
 
 
 class MessageReceiver(MessageSender):
@@ -109,12 +105,13 @@ class MessageReceiver(MessageSender):
                 if self.tls_enabled:
                     client_socket = self.wrap_socket_tls(client_socket, server_side=True)
                 self.debugLogger.info(f'KEEP RECEIVING: {clientAddress}')
-                content, packetSize = receive_message(client_socket)
-                message = MessageReceived.fromDict(content)
+                messageInDict, packetSize, buffer = receive_message(b'', client_socket)
+                message = MessageReceived.fromDict(messageInDict)
                 source_addr = message.source.addr
                 self.conns.acquire()
                 if source_addr not in self.conns or client_socket != self.conns[source_addr].socket:
                     self.conns[source_addr] = Connection(
+                        buffer=buffer,
                         tls_enabled=self.tls_enabled,
                         recv_queue=self.messagesReceivedQueue,
                         send_queue=Queue(),
@@ -128,7 +125,7 @@ class MessageReceiver(MessageSender):
                 if (self.role == ComponentRole.MASTER and
                         message.type == MessageType.LOG and
                         message.type != MessageSubType.ALL_RESOURCES_PROFILES):
-                    self.sendMessage(messageToSend=MessageToSend.fromDict(content))
+                    self.sendMessage(messageToSend=MessageToSend.fromDict(messageInDict))
                     continue
                 self.messagesReceivedQueue.put((message, packetSize))
                 i += 1
