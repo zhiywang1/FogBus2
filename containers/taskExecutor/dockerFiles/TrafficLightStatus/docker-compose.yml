@@ -1,6 +1,6 @@
 services:
 
-  fogbus2-naive_formula3:
+  fogbus2-traffic_light_status:
     image: cloudslab/fogbus2-traffic_light_status:1.0
     build:
       context: ../../
