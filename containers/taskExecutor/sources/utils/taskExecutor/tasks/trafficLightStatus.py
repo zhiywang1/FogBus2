@@ -9,10 +9,10 @@ class TrafficLightStatus(BaseTask):
         super().__init__(taskID=202, taskName='TrafficLightStatus')
 
         self.traffic_lights = [
-            ('Junction 1', 'traffic-light-1.great-dace.ts.net'),
-            ('Junction 2', 'traffic-light-2.great-dace.ts.net'),
-            ('Junction 3', 'traffic-light-3.great-dace.ts.net'),
-            ('Junction 4', 'traffic-light-4.great-dace.ts.net'),
+            ('Junction 1', '100.118.67.2'),
+            ('Junction 2', '100.101.191.76'),
+            ('Junction 3', '100.74.59.69'),
+            ('Junction 4', '100.68.188.100'),
         ]
 
     @staticmethod
