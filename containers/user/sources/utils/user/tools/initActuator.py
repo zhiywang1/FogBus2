@@ -4,6 +4,7 @@ from ..applications import ApplicationUserSide
 from ..applications import NaiveFormulaParallelized
 from ..applications import NaiveFormulaSerialized
 from ..applications import ObjectDetection
+from ..applications import TrafficLightStatus
 from ...component.basic import BasicComponent
 
 
@@ -22,6 +23,10 @@ def initActuator(
             basicComponent=basicComponent)
     elif appName == 'ObjectDetection':
         actuator = ObjectDetection(
+            basicComponent=basicComponent,
+            *args, **kwargs)
+    elif appName == 'TrafficLightStatus':
+        actuator = TrafficLightStatus(
             basicComponent=basicComponent,
             *args, **kwargs)
     return actuator

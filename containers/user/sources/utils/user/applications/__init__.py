@@ -2,3 +2,4 @@ from .base import ApplicationUserSide
 from .naiveFormulaParallelized import NaiveFormulaParallelized
 from .naiveFormulaSerialized import NaiveFormulaSerialized
 from .objectDetection import ObjectDetection
+from .trafficLightStatus import TrafficLightStatus

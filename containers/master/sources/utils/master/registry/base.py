@@ -203,6 +203,19 @@ class Registry(ABC):
                 tasksWithDependency=tasks_dict,
                 entryTasks=entry_tasks
             )
+        elif applicationName == 'TrafficLightStatus':
+            from ..application.task.dependency.base import TaskWithDependency
+            tasks_dict = {}
+            entry_tasks = []
+            task_name = f'TrafficLightStatus'
+            task = TaskWithDependency(task_name)
+            tasks_dict[task_name] = task
+            entry_tasks.append(task)
+            application = Application(
+                name=f'TrafficLightStatus',
+                tasksWithDependency=tasks_dict,
+                entryTasks=entry_tasks
+            )
         elif applicationName not in self.applicationManager.applications:
             self.debugLogger.info(self.applicationManager.applications)
             self.debugLogger.warning(f'Application name not valid:{applicationName}')

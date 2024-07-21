@@ -20,5 +20,7 @@ def initTask(taskName: str) -> Union[BaseTask, None]:
     elif taskName.startswith('ObjectDetectionYolov7'):
         from ..tasks.object_detection_yolov7 import ObjectDetectionYoloV7
         task = ObjectDetectionYoloV7()
-
+    elif taskName.startswith('TrafficLightStatus'):
+        from ..tasks.trafficLightStatus import TrafficLightStatus
+        task = TrafficLightStatus()
     return task
