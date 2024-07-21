@@ -21,12 +21,14 @@ class TrafficLightStatus(ApplicationUserSide):
     def _run(self):
         self.basicComponent.debugLogger.info(
             'Application is running: %s', self.appName)
+        request = 0
         while True:
             sent_time = time() * 1000
-            self.dataToSubmit.put(None)
+            self.dataToSubmit.put(request)
+            self.basicComponent.debugLogger.info('Request sent #: %d', request)
             result = self.resultForActuator.get()
             print('Result:', result)
             self.responseTime.update(time() * 1000 - sent_time)
-
             self.basicComponent.debugLogger.info(
-                f'Response time: {self.responseTime.median():.3f} ms')
+                f'{request} # Response time: {self.responseTime.median():.3f} ms')
+            request += 1

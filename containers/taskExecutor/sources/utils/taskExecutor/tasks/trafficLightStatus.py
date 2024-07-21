@@ -21,8 +21,8 @@ class TrafficLightStatus(BaseTask):
         response = requests.get(api_url)
         return response.json()
 
-    def exec(self, inputData):
-        print('Received inputData ', time())
+    def exec(self, request_count):
+        print('Received request # ', request_count)
         results = {}
         for junction, host in self.traffic_lights:
             results[junction] = self.get_light_status(host)

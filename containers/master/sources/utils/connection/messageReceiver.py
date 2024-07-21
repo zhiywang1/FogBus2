@@ -200,5 +200,5 @@ class MessageReceiver(MessageSender):
         pass
 
     @abstractmethod
-    def handlerMessage(self):
+    def handleMessage(self):
         pass

@@ -104,6 +104,7 @@ class MasterMessageHandler:
         return
 
     def handleData(self, message: MessageReceived) -> HandlerReturn:
+        self.basicComponent.debugLogger.debug('Handling data:', message.toDict())
         if message.typeIs(messageSubType=MessageSubType.SENSORY_DATA):
             return self.dataHandler.handleSensoryData(message)
         elif message.typeIs(messageSubType=MessageSubType.FINAL_RESULT):
