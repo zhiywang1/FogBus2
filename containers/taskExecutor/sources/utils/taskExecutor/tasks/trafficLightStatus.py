@@ -1,5 +1,5 @@
-from concurrent.futures import ThreadPoolExecutor
 import requests
+from time import time
 
 from .base import BaseTask
 
@@ -16,13 +16,15 @@ class TrafficLightStatus(BaseTask):
         ]
 
     @staticmethod
-    def get_light_status( host, port=8000):
+    def get_light_status(host, port=8000):
         api_url = f'http://{host}:{port}/light_status'
         response = requests.get(api_url)
         return response.json()
 
     def exec(self, inputData):
+        print('Received inputData ', time())
         results = {}
         for junction, host in self.traffic_lights:
             results[junction] = self.get_light_status(host)
+        print('results: ', results)
         return results
