@@ -37,7 +37,11 @@ class Decision(SerializableDictionary):
             indent=3)
 
     def hostIDSequence(self) -> List[str]:
-        hostIDSequence = [self.indexToHostID[i] for i in self.indexSequence]
+        try:
+            hostIDSequence = [self.indexToHostID[i] for i in self.indexSequence]
+        except IndexError:
+            raise Exception(f"self.indexSequence: {self.indexSequence} \r\n"
+                            f"self.indexToHostID: {self.indexToHostID}\r\n")
         return hostIDSequence
 
     @staticmethod
