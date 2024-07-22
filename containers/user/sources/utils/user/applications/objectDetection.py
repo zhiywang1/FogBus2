@@ -86,6 +86,9 @@ class ObjectDetection(ApplicationUserSide):
         while True:
             result = self.resultForActuator.get()
             frame_count = result['frame_count']
+            if frame_count == 500:
+                import os
+                os._exit(0)
             self.responseTime.update((time() - self.sent_times[frame_count % self.fps]) * 1000)
 
             objects = result['objects']
