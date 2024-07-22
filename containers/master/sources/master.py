@@ -246,7 +246,7 @@ def parseArg():
         '--schedulerName',
         metavar='SchedulerName',
         nargs='?',
-        default='OHNSGA',
+        default='NSGA3',
         type=str,
         help='Scheduler name')
     parser.add_argument(
