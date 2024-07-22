@@ -31,7 +31,7 @@ class TrafficLightStatus(ApplicationUserSide):
             self.responseTime.update(time() * 1000 - sent_time)
             self.basicComponent.debugLogger.info(
                 f'{request} # Response time: {self.responseTime.median():.3f} ms')
-            if result > 1000:
+            if request > 1000:
                 import os
                 os._exit(0)
             request += 1
