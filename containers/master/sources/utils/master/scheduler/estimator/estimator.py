@@ -44,20 +44,23 @@ class Estimator:
         """
         availableActors = {}
         for taskName in self.taskList:
-            availableActors[taskName] = []
-            if not self.isContainerMode:
-                availableActors[taskName] = allActors
-                continue
-            imageName = 'fogbus2-%s:1.0' % camelToSnake(
-                'ObjectDetectionYolov7' if taskName.startswith('ObjectDetectionYolov7') else taskName)
-            for actor in allActors:
-                if imageName not in actor.actorResources.images:
-                    if 'cloudslab/' + imageName not in \
-                            actor.actorResources.images:
-                        continue
-                availableActors[taskName].append(actor)
-            if len(availableActors[taskName]) == 0:
-                raise Exception('No available actor for task: ' + taskName)
+            # TODO: Fix this
+            availableActors[taskName] = allActors
+            continue
+            # availableActors[taskName] = []
+            # if not self.isContainerMode:
+            #     availableActors[taskName] = allActors
+            #     continue
+            # imageName = 'fogbus2-%s:1.0' % camelToSnake(
+            #     'ObjectDetectionYolov7' if taskName.startswith('ObjectDetectionYolov7') else taskName)
+            # for actor in allActors:
+            #     if imageName not in actor.actorResources.images:
+            #         if 'cloudslab/' + imageName not in \
+            #                 actor.actorResources.images:
+            #             continue
+            #     availableActors[taskName].append(actor)
+            # if len(availableActors[taskName]) == 0:
+            #     raise Exception('No available actor for task: ' + taskName)
         return availableActors
 
     def estimateCost(self, indexSequence: List[int]):

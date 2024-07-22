@@ -52,7 +52,6 @@ class BaseScheduler:
             *args,
             **kwargs) -> bool:
         allActors = registeredManager.actors.filter_by_domain(user.domainName)
-
         if not len(allActors):
             basicComponent.debugLogger.warning(
                 'No %s to schedule in domain %s', ComponentRole.ACTOR.value, user.domainName)
@@ -69,26 +68,27 @@ class BaseScheduler:
                 user.domainName)
             return False
 
-        if resources.cpu.utilization > .8:
-            schedulingCount = self.readWaitingCount()
-            if schedulingCount > 4:
-                knownMasters = registeredManager.masters.copyAll()
-                subMaster = self.getBestMaster(
-                    user=user, knownMasters=knownMasters)
-                if subMaster is None:
-                    self.scaler = self.prepareScaler(
-                        user=user,
-                        master=basicComponent.me,
-                        allActors=allActors,
-                        systemPerformance=systemPerformance,
-                        isContainerMode=self.isContainerMode)
-                    subMaster = self.scaler.scale(user=user, actors=allActors)
-                    if subMaster is None:
-                        return False
-                basicComponent.debugLogger.debug(
-                    'Forward request to another ip %s', str(subMaster.addr[0]))
-                self.scaler.notifyUser(user, subMaster)
-                return False
+        # TODO: Uncomment this
+        # if resources.cpu.utilization > .8:
+        #     schedulingCount = self.readWaitingCount()
+        #     if schedulingCount > 4:
+        #         knownMasters = registeredManager.masters.copyAll()
+        #         subMaster = self.getBestMaster(
+        #             user=user, knownMasters=knownMasters)
+        #         if subMaster is None:
+        #             self.scaler = self.prepareScaler(
+        #                 user=user,
+        #                 master=basicComponent.me,
+        #                 allActors=allActors,
+        #                 systemPerformance=systemPerformance,
+        #                 isContainerMode=self.isContainerMode)
+        #             subMaster = self.scaler.scale(user=user, actors=allActors)
+        #             if subMaster is None:
+        #                 return False
+        #         basicComponent.debugLogger.debug(
+        #             'Forward request to another ip %s', str(subMaster.addr[0]))
+        #         self.scaler.notifyUser(user, subMaster)
+        #         return False
 
         decision = self._schedule(
             user=user,
