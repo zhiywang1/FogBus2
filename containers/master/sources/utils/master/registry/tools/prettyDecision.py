@@ -11,10 +11,12 @@ def prettyDecision(decision: Decision, registeredActor: RegisteredActors):
     indexToHostID = decision.indexToHostID
     for i, taskName in enumerate(taskNameList):
         index = indexSequence[i]
-        print(f"Actors: {len(registeredActor)}"
-              f"index: {index}"
-              f"indexToHostID: {indexToHostID}"
-              f"indexSequence: {indexSequence}")
-        actorHostID = indexToHostID[index]
+        try:
+            actorHostID = indexToHostID[index]
+        except Exception:
+            raise Exception(f"Actors: {len(registeredActor)}"
+                            f"index: {index}"
+                            f"indexToHostID: {indexToHostID}"
+                            f"indexSequence: {indexSequence}")
         inDict[taskName] = registeredActor[actorHostID].nameLogPrinting
     return pformat(inDict, indent=8)
