@@ -135,6 +135,9 @@ class MessageReceiver(MessageSender):
                 continue
             except Exception:
                 print_exc()
+                if self.role not in (ComponentRole.REMOTE_LOGGER, ComponentRole.MASTER):
+                    self.debugLogger.error('Failed to send message. Exiting')
+                    terminate()
                 continue
 
     def tryListeningOn(self,

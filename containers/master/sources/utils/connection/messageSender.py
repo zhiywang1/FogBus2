@@ -21,7 +21,7 @@ from ..types import ComponentRole
 from ..types import MessageSubSubType
 from ..types import MessageSubType
 from ..types import MessageType
-
+from ..tools.terminate import terminate
 from .message import MessageReceived
 
 SEP = b','
@@ -267,3 +267,6 @@ class MessageSender(Component, DebugLogPrinter):
 
             except Exception:
                 print_exc()
+                if self.role not in (ComponentRole.REMOTE_LOGGER, ComponentRole.MASTER):
+                    self.debugLogger.error('Failed to send message. Exiting')
+                    terminate()
