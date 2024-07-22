@@ -38,7 +38,7 @@ def receive_message(buffer, clientSocket: socket):
     while len(buffer) < 5:
         ret = clientSocket.recv(4096)
         if not ret:
-            raise Exception('Received empty data')
+            raise Exception('Connection disconnected')
         buffer += ret
     msg_len = int.from_bytes(buffer[:4], byteorder='big')
     m = buffer[5:]
@@ -52,7 +52,7 @@ def receive_message(buffer, clientSocket: socket):
     while remaining > 0:
         ret = clientSocket.recv(4096)
         if not ret:
-            raise Exception('Received empty data')
+            raise Exception('Connection disconnected')
         if len(ret) > remaining:
             m += ret[:remaining]
             buffer = ret[remaining:]
