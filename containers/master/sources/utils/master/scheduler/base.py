@@ -52,6 +52,9 @@ class BaseScheduler:
             *args,
             **kwargs) -> bool:
         allActors = registeredManager.actors.filter_by_domain(user.domainName)
+        allActors = allActors.copy()
+        from pprint import pformat
+        basicComponent.debugLogger.debug(pformat(allActors))
         if not len(allActors):
             basicComponent.debugLogger.warning(
                 'No %s to schedule in domain %s', ComponentRole.ACTOR.value, user.domainName)
