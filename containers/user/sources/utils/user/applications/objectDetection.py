@@ -80,15 +80,17 @@ class ObjectDetection(ApplicationUserSide):
             'Application is running: %s', self.appName)
         Thread(target=self._frame_sender).start()
         draw_times = []
+        pre_time = time()
         while True:
             result = self.resultForActuator.get()
             frame_count = result['frame_count']
             self.responseTime.update((time() - self.sent_times[frame_count % self.fps]) * 1000)
 
-            self.basicComponent.debugLogger.info(
-                f'Frame Count: {frame_count}, Response time: {self.responseTime.median():.3f} ms')
             objects = result['objects']
             i, curr_time = 0, time()
+            fps = 1 / (curr_time - pre_time)
+            self.basicComponent.debugLogger.info(
+                f'Frame Count: {frame_count}, Response time: {self.responseTime.median():.3f} ms, FPS: {fps:.2f}')
             draw_times.append(curr_time)
 
             for t in draw_times:
