@@ -37,7 +37,7 @@ class Decision(SerializableDictionary):
             indent=3)
 
     def hostIDSequence(self) -> List[str]:
-        return self.indexToHostID[i]
+        return self.indexToHostID
 
     @staticmethod
     def fromDict(inDict: Dict):
