@@ -14,7 +14,7 @@ class TaskManager:
     async def start(self):
         for task in self.tasks:
             task.start()
-        print(f'TaskManager {self.name} is running: {len(self.tasks)} tasks')
+        print(f'[*] TaskManager {self.name} is running: {len(self.tasks)} tasks')
         while True:
             await asyncio.sleep(1)
 

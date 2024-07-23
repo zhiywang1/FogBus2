@@ -1,5 +1,6 @@
-docker run \
+docker run -it\
   --rm \
   -v ./sources:/workplace \
-  --entrypoint "python run_dynamic.py" \
-  cloudslab/fogbus2-siem-dynamic:1.0
+  --entrypoint "python" \
+  cloudslab/fogbus2-siem-dynamic:1.0 \
+  run_dynamic.py
