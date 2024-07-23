@@ -3,7 +3,7 @@ WORKDIR /workplace
 
 RUN python -m pip install --upgrade pip
 COPY ./sources/ /workplace
-RUN rm .env
+RUN rm .env > /dev/null 2>&1 &
 
 RUN apk add gcc python3-dev musl-dev linux-headers iptables
 RUN python -m pip install \
