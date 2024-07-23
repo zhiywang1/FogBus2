@@ -24,7 +24,10 @@ class TrafficLightStatus(BaseTask):
     def exec(self, request_count):
         print('Received request # ', request_count)
         results = {}
+        start_time = time()
         for junction, host in self.traffic_lights:
             results[junction] = self.get_light_status(host)
+        computation_time = (time() - start_time) * 1000
+
         print('results: ', results)
-        return results
+        return {'results': results, 'computation_time': computation_time}

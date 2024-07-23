@@ -103,8 +103,12 @@ class ObjectDetection(ApplicationUserSide):
                 fps = fc / (curr_time - pre_time)
                 pre_time = curr_time
                 fc = 0
+            computation_time = result['computation_time']
             self.basicComponent.debugLogger.info(
-                f'Frame Count: {frame_count}, Response time: {self.responseTime.median():.3f} ms, FPS: {fps:.2f}')
+                f'Frame Count: {frame_count}'
+                f', Response time: {self.responseTime.median():.3f} ms'
+                f', Computation time: {computation_time:.3f} ms'
+                f', FPS: {fps:.2f}')
             draw_times.append(curr_time)
 
             for t in draw_times:

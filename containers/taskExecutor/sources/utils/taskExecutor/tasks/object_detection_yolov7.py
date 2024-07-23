@@ -1,6 +1,6 @@
 import os
 import sys
-
+from time import time
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.dirname(__file__) + '/yolov7')
 from yolov7 import Yolov7
@@ -18,10 +18,14 @@ class ObjectDetectionYoloV7(BaseTask):
     def exec(self,
              input_data):
         image = input_data['image']
+
+        start_time = time()
         objects = self.yolov7.detect(image)
+        computation_time = (time() - start_time) * 1000
         result = {
             'objects': objects,
-            'frame_count': input_data['frame_count']
+            'frame_count': input_data['frame_count'],
+            'computation_time': computation_time
         }
         print(f'Frame count: {input_data["frame_count"]}, objects count: {len(objects)}')
         return result
