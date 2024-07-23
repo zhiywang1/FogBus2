@@ -1,16 +1,13 @@
-FROM python:3.9-alpine3.14
-WORKDIR /workplace
+# Base
+FROM python:3.10-slim AS base
 
-RUN python -m pip install --upgrade pip
+COPY ./sources/requirements.txt /tmp/requirements.txt
+RUN pip install -U pip
+RUN pip install -r /tmp/requirements.txt && rm /tmp/requirements.txt
+
+WORKDIR /workplace
 COPY ./sources/ /workplace
 RUN rm .env > /dev/null 2>&1 &
 
-RUN apk add gcc python3-dev musl-dev linux-headers iptables
-RUN python -m pip install \
-    --no-cache-dir \
-    -r requirements.txt
-
-
 # Hostname
 RUN echo "SIME" > /etc/hostname
-
