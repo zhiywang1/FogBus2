@@ -74,16 +74,7 @@ class ObjectDetection(ApplicationUserSide):
             frame_count += 1
         self.sensor.release()
 
-    def _monitor_response_time(self):
-        while True:
-            curr_time = time() * 1000
-            rs = self.responseTime.median()
-            self.basicComponent.debugLogger.info(
-                f'Object Detection TS: {curr_time} Monitored Response Time: {rs:.3f} ms')
-            sleep(0.01)
-
     def _run(self):
-        Thread(target=self._monitor_response_time).start()
         self.basicComponent.debugLogger.info(
             'Application is running: %s', self.appName)
         Thread(target=self._frame_sender).start()
