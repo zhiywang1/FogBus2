@@ -72,11 +72,6 @@ def parse_arg():
     parser = argparse.ArgumentParser(
         description='SIEM-Agent')
     parser.add_argument(
-        '--listenIP',
-        metavar='Listen IP',
-        type=str,
-        help='Listen IP address.')
-    parser.add_argument(
         '--port',
         metavar='Port',
         nargs='?',
@@ -100,8 +95,8 @@ if __name__ == "__main__":
     protected_resource = HTTPAuthSessionWrapper(portal, [credentialFactory])
     # "tcp:80:interface=127.0.0.1"
     args = parse_arg()
-    endpoint = endpoints.serverFromString(reactor, f"tcp:{args.port}:interface={args.listenIP}")
+    endpoint = endpoints.serverFromString(reactor, f"tcp:{args.port}:interface=0.0.0.0")
     factory = Site(protected_resource)
     endpoint.listen(factory)
-    print(f"[*] Agent started at http://{args.listenIP}:{args.port}")
+    print(f"[*] Listen on all address at port {args.port}")
     reactor.run()
