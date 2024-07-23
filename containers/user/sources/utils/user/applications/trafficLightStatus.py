@@ -31,9 +31,10 @@ class TrafficLightStatus(ApplicationUserSide):
             result = output['results']
             computation_time = output['computation_time']
             print('Result:', result)
-            self.responseTime.update(time() * 1000 - sent_time)
+            response_time = time() * 1000 - sent_time
+            self.responseTime.update(response_time)
             self.basicComponent.debugLogger.info(
                 f'{request} #'
-                f' Response time: {self.responseTime.median():.3f} ms'
+                f' Response time: {response_time:.3f} ms'
                 f' Computation time: {computation_time:.3f} ms')
             request += 1

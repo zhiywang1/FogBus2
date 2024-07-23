@@ -85,7 +85,8 @@ class ObjectDetection(ApplicationUserSide):
         while True:
             result = self.resultForActuator.get()
             frame_count = result['frame_count']
-            self.responseTime.update((time() - self.sent_times[frame_count % self.fps]) * 1000)
+            response_time = (time() - self.sent_times[frame_count % self.fps]) * 1000
+            self.responseTime.update(response_time)
 
             objects = result['objects']
             i, curr_time = 0, time()
@@ -97,7 +98,7 @@ class ObjectDetection(ApplicationUserSide):
             computation_time = result['computation_time']
             self.basicComponent.debugLogger.info(
                 f'Frame Count: {frame_count}'
-                f', Response time: {self.responseTime.median():.3f} ms'
+                f', Response time: {response_time:.3f} ms'
                 f', Computation time: {computation_time:.3f} ms'
                 f', FPS: {fps:.2f}')
             draw_times.append(curr_time)
