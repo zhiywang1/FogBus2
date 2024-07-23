@@ -1,5 +1,6 @@
 docker run \
   --rm \
+  --name SIEM-Agent \
   -p 7398:7398 \
   -v ./sources:/workplace \
   -v /var/run/docker.sock:/var/run/docker.sock \
