@@ -18,4 +18,3 @@ services:
     privileged: true
     restart: unless-stopped
 
-

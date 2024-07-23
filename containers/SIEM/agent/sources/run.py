@@ -1,3 +1,5 @@
+import argparse
+
 import dotenv
 import os
 from twisted.web.server import Site
@@ -66,6 +68,24 @@ class SimpleRealm:
         raise NotImplementedError()
 
 
+def parse_arg():
+    parser = argparse.ArgumentParser(
+        description='SIEM-Agent')
+    parser.add_argument(
+        '--listenIP',
+        metavar='Listen IP',
+        type=str,
+        help='Listen IP address.')
+    parser.add_argument(
+        '--port',
+        metavar='Port',
+        nargs='?',
+        default=7398,
+        type=int,
+        help='Port number.')
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
     dotenv.load_dotenv()
     username = os.getenv("AGENT_BASIC_HTTP_USER")
@@ -78,9 +98,10 @@ if __name__ == "__main__":
 
     credentialFactory = BasicCredentialFactory("SIME Agent")
     protected_resource = HTTPAuthSessionWrapper(portal, [credentialFactory])
-
-    endpoint = endpoints.serverFromString(reactor, "tcp:7398")
+    # "tcp:80:interface=127.0.0.1"
+    args = parse_arg()
+    endpoint = endpoints.serverFromString(reactor, f"tcp:{args.port}:interface={args.listenIP}")
     factory = Site(protected_resource)
     endpoint.listen(factory)
-    print("Agent started on port 7398")
+    print(f"[*] Agent started at http://{args.listenIP}:{args.port}")
     reactor.run()

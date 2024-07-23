@@ -1,17 +1,14 @@
-FROM python:3.9-alpine3.14
+# Base
+FROM python:3.9-slim AS base
+
 WORKDIR /workplace
 
-RUN python -m pip install --upgrade pip
-COPY ./sources/ /workplace
+RUN pip install -U pip
+COPY ./sources/requirements.txt /tmp/requirements.txt
+RUN pip install -r /tmp/requirements.txt
 
-RUN apk add gcc python3-dev musl-dev linux-headers iptables
-RUN python -m pip install \
-    --no-cache-dir \
-    -r requirements.txt
-
-
-
+COPY ./sources /workplace
 # Hostname
-RUN echo "SIME-Agent" > /etc/hostname
-
-#ENTRYPOINT ["python","-u", "run.py"]
+RUN echo "SIEM-Agent" > /etc/hostname
+# Run SIEM Agent
+ENTRYPOINT ["python", "-u", "run.py"]
