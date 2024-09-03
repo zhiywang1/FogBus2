@@ -4,7 +4,7 @@ import os
 from .base import BaseTask
 
 
-class TrafficLightStatus(BaseTask):
+class DiabetesVoter1(BaseTask):
     def __init__(self):
         super().__init__(taskID=202, taskName='DiabetesVoter1')
         path = os.path.dirname(os.path.realpath(__file__))
@@ -15,4 +15,4 @@ class TrafficLightStatus(BaseTask):
              data):
         self.scaler.transform(data)
         prediction = self.model.predict(data)
-        return {'voter1': prediction[0]}
+        return {'voter1': prediction}

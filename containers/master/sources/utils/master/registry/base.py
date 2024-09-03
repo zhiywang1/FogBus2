@@ -399,10 +399,12 @@ class Registry(ABC):
         while True:
             decision = self.decisionsQueue.get()
             self.printDecision(decision)
-            hostIDSequence = decision.hostIDSequence()
+            indexSequence = decision.indexSequence
+            real_indexes = decision.indexToHostID
             user = decision.user
-            for i, hostID in enumerate(hostIDSequence):
-                actor = self.registeredManager.actors[hostID]
+            for i, hostID in enumerate(indexSequence):
+                real_i = real_indexes[hostID]
+                actor = self.registeredManager.actors[real_i]
                 taskNameLabeled = user.application.taskNameList[i]
                 taskToken = user.taskNameToToken[taskNameLabeled]
                 childrenTaskTokens = self.findChildrenTaskTokens(

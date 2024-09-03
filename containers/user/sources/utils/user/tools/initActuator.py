@@ -5,6 +5,7 @@ from ..applications import NaiveFormulaParallelized
 from ..applications import NaiveFormulaSerialized
 from ..applications import ObjectDetection
 from ..applications import TrafficLightStatus
+from ..applications import DiabetesPrediction
 from ...component.basic import BasicComponent
 
 
@@ -27,6 +28,10 @@ def initActuator(
             *args, **kwargs)
     elif appName == 'TrafficLightStatus':
         actuator = TrafficLightStatus(
+            basicComponent=basicComponent,
+            *args, **kwargs)
+    elif appName == 'DiabetesPrediction':
+        actuator = DiabetesPrediction(
             basicComponent=basicComponent,
             *args, **kwargs)
     return actuator
