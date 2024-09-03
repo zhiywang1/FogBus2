@@ -1,0 +1,11 @@
+services:
+
+  fogbus2-diabetes_voter1:
+    image: cloudslab/fogbus2-diabetes_voter1:1.0
+    build:
+      context: ../../
+      dockerfile: dockerFiles/DiabetesVoter1/Dockerfile
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: Australia/Melbourne
